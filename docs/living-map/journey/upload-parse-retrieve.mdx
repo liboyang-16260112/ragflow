@@ -1,0 +1,174 @@
+---
+title: 文档摄入与检索
+sidebar_position: 1
+---
+
+# 黄金路径：文档摄入与检索
+
+本文档提供从上传文档到检索结果的完整端到端流程。适用于需要将内容导入 RAGFlow 知识库并实现搜索的集成场景。
+
+## 前置条件
+
+- 已获取有效的 API Token（见[认证指南](../integration/authentication.mdx)）
+- 已创建一个数据集（知识库）并获得其 `dataset_id`
+- 有可供上传的文档文件（支持 PDF、DOCX、TXT、Markdown、HTML、Excel 等）
+
+## 步骤概览
+
+```
+1. 上传文档 → 2. 触发解析 → 3. 轮询状态 → 4. 执行检索 → 5. 获取检索结果
+```
+
+## 详细步骤
+
+### 第一步：上传文档
+
+将文件上传至 RAGFlow 并获得文档ID。
+
+```http
+POST /api/v1/datasets/{dataset_id}/documents
+Authorization: Bearer <your-token>
+Content-Type: multipart/form-data
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "data": [
+    {
+      "id": "doc_abc123",
+      "name": "example.pdf",
+      "status": "UNSTARTED"
+    }
+  ]
+}
+```
+
+> **检查点**：记录返回的 `document_id`，后续步骤需要。
+
+参见 [POST /api/v1/datasets/{dataset_id}/documents](../references/http_api_reference.md#post-apiv1datasetsdataset_iddocuments)
+
+### 第二步：触发文档解析
+
+解析将原始文件转换为可检索的结构化分块。
+
+```http
+POST /api/v1/datasets/{dataset_id}/documents/parse
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "document_ids": ["doc_abc123"]
+}
+```
+
+响应立即返回（解析在后台进行）：
+
+```json
+{
+  "code": 0,
+  "message": "success"
+}
+```
+
+> **检查点**：`POST` 返回 200 仅表示解析任务已被接受，不代表解析完成。
+
+参见 [POST /api/v1/datasets/{dataset_id}/documents/parse](../references/http_api_reference.md#post-apiv1datasetsdataset_iddocumentsparse)
+
+### 第三步：轮询解析状态
+
+调用文档列表接口检查解析进度。
+
+```http
+GET /api/v1/datasets/{dataset_id}/documents?ids=doc_abc123
+Authorization: Bearer <your-token>
+```
+
+响应中检查 `status` 字段：
+
+| 状态 | 含义 | 下一步 |
+|------|------|--------|
+| `UNSTARTED` | 未开始 | 检查是否已触发解析 |
+| `PARSING` / `RUNNING` | 解析中 | 等待并轮询 |
+| `COMPLETED` / `SUCCESS` | 已成功 | ✅ 进入检索步骤 |
+| `FAILED` | 失败 | 查看 `error` 字段排查原因 |
+
+> **检查点**：文档状态变为 `COMPLETED` 后方可检索。大文件可能需要数分钟处理。
+
+参见 [GET /api/v1/datasets/{dataset_id}/documents](../references/http_api_reference.md#get-apiv1datasetsdataset_iddocuments)
+
+### 第四步：执行检索
+
+文档解析完成后，即可在数据集内搜索相关内容。
+
+```http
+POST /api/v1/datasets/{dataset_id}/search
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "question": "关键问题是什么？",
+  "top_k": 5,
+  "rerank": true
+}
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "chunks": [
+      {
+        "id": "chunk_001",
+        "content": "匹配的分块内容...",
+        "document_name": "example.pdf",
+        "similarity": 0.92
+      }
+    ]
+  }
+}
+```
+
+> **检查点**：返回结果中包含 `chunks` 数组时检索成功。如果没有匹配结果，检查文档是否已完成解析以及查询方式是否合适。
+
+参见 [POST /api/v1/datasets/{dataset_id}/search](../references/http_api_reference.md#post-apiv1datasetsdataset_idsearch)
+
+## 可选路径
+
+### 暂停解析
+
+如需中途停止解析：
+
+```http
+POST /api/v1/datasets/{dataset_id}/documents/stop
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "document_ids": ["doc_abc123"]
+}
+```
+
+### 删除文档
+
+不再需要某文档时：
+
+```http
+DELETE /api/v1/datasets/{dataset_id}/documents
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "ids": ["doc_abc123"]
+}
+```
+
+## 相关能力页面
+
+- [数据集管理](../capability/dataset.mdx)
+- [文档与摄入](../capability/document-ingestion.mdx)
+- [分块与检索](../capability/chunk-retrieval.mdx)

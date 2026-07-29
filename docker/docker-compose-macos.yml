@@ -3,6 +3,7 @@ include:
 
 services:
   ragflow:
+    container_name: fmoss-rag-server-macos
     platform: linux/amd64
     depends_on:
       mysql:

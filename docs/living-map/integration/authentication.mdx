@@ -1,0 +1,139 @@
+---
+title: 对接指南
+sidebar_position: 1
+---
+
+# 对接 RAGFlow API——集成指引
+
+本文档为需要通过 API 对接 RAGFlow 的外部开发者提供入门指引，涵盖认证、传输选择、响应格式、错误处理、异步任务与流式响应的基础约定。
+
+## 认证
+
+RAGFlow 支持 **JWT Cookie** 与 **API Token** 两种认证方式。
+
+### JWT Cookie（浏览器/SDK 内部使用）
+
+通过 `POST /api/v1/auth/login` 提交邮箱与密码获得会话 Cookie。适用于 Web 前端及基于 Cookie 的交互场景。
+
+```
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "your-password"
+}
+```
+
+成功后返回的用户身份会保存在会话 Cookie 中，后续请求自动携带。
+
+### API Token（推荐集成使用）
+
+在 RAGFlow 控制台中生成 API Token，并通过 `Authorization` 请求头发送：
+
+```
+Authorization: Bearer <your-api-token>
+```
+
+API Token 适用于服务端集成、CI/CD 流水线及非浏览器环境。详细步骤见 [获取 API Key](../develop/acquire_ragflow_api_key.md)。
+
+## HTTP 与 Python SDK 的选择
+
+| 场景 | 推荐方式 |
+|------|----------|
+| 非 Python 项目 | 直接调用 HTTP API |
+| Python 项目，需全量控制 | 直接调用 HTTP API（使用 `requests` / `httpx`） |
+| Python 项目，快速集成 | 使用 [RAGFlow Python SDK](references/python_api_reference.md) |
+| 需要上传/下载大文件 | 优先使用 HTTP API（可配合分块传输） |
+
+Python SDK 封装了常用的 CRUD 操作，减少了手动构造请求与解析响应的工作量，但不涵盖所有 API——请以 [公共 API 清单](../generated/) 为准。
+
+## 响应信封
+
+所有 API 响应均采用统一的 JSON 信封格式：
+
+```json
+{
+  "code": 0,
+  "data": { ... },
+  "message": "success"
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `code` | int | `0` 表示成功；非零值表示错误 |
+| `data` | object | 成功时的响应数据 |
+| `message` | string | 错误时的描述信息 |
+
+## 错误处理
+
+### HTTP 状态码
+
+| 状态码 | 说明 |
+|--------|------|
+| `200` | 成功 |
+| `400` | 请求参数错误 |
+| `401` | 未认证或 Token 无效 |
+| `403` | 无权限 |
+| `404` | 资源不存在 |
+| `500` | 服务器内部错误 |
+
+### 错误响应
+
+```json
+{
+  "code": 102,
+  "message": "Authentication failed: invalid token"
+}
+```
+
+建议集成代码始终检查 `code == 0` 而非仅依赖 HTTP 状态码，因为部分业务错误也可能返回 `200` 并在 `code` 中携带非零值。
+
+## 异步任务
+
+部分操作（如文档解析、知识库索引）是异步的：
+
+1. **发起操作** → 立即返回 `200`。
+2. **轮询状态** → 调用对应的查询接口（如 `GET /api/v1/datasets/{dataset_id}/documents`）获取任务进度。
+3. **完成检查** → 文档状态变为 `"COMPLETED"` 或 `"FAILED"` 时操作结束。
+
+> 具体轮询策略和状态值请参考各能力页面的**运行时流程**节。
+
+## 流式响应
+
+对话补全（`POST /api/v1/chat/completions`）与 Agent 补全（`POST /api/v1/agents/chat/completions`）支持 SSE（Server-Sent Events）流式响应。
+
+在请求体中设置 `"stream": true` 即可启用流式输出：
+
+```json
+{
+  "session_id": "...",
+  "question": "你好",
+  "stream": true
+}
+```
+
+流式响应格式：
+
+```
+data: {"code": 0, "data": {"answer": "你好", "reference": {}, "audio": null}, "delta": true}
+
+data: {"code": 0, "data": {"answer": "！", "reference": {}, "audio": null}, "delta": true}
+
+data: {"code": 0, "data": {"answer": "我是 RAGFlow 助手", "reference": {...}, "audio": null}, "delta": false}
+```
+
+- `delta: true` 表示仍有增量内容。
+- `delta: false` 表示流结束，`reference` 字段包含引文信息。
+
+## 分页
+
+列表类接口通常支持 `page` 与 `page_size` 查询参数（部分接口使用 `limit`/`offset`）。响应中的 `data` 可能直接为数组或包含 `items`/`total` 等分页元信息——以具体端点的 HTTP 参考文档为准。
+
+## 下一步
+
+- [黄金路径：文档摄入与检索](../journey/upload-parse-retrieve.mdx)
+- [黄金路径：对话补全](../journey/chat-session.mdx)
+- [黄金路径：Agent 执行](../journey/agent-session.mdx)
+- [公共 API 清单](../generated/)

@@ -1,0 +1,62 @@
+---
+title: RAGFlow 项目活地图
+sidebar_position: 1
+---
+
+# RAGFlow 项目活地图
+
+欢迎。本活地图是你在 RAGFlow 项目中的统一导航入口——无论你是**对接 RAGFlow API** 的外部集成方，还是需要**理解或修改 RAGFlow 本身**的开发者，都可以从这里出发。
+
+## 选择你的路径
+
+### 🔌 我想对接 RAGFlow
+
+如果你正在编写调用 RAGFlow API 的代码，或需要将 RAGFlow 的能力嵌入到你的应用中：
+
+1. 从 [**对接指南**](./integration/authentication.mdx) 了解认证方式、HTTP 与 Python SDK 的选取建议，以及响应格式、错误处理与流式响应的基础约定。
+2. 浏览 [**黄金路径**](./journey/upload-parse-retrieve.mdx) 获得完整的端到端调用示例。
+3. 查阅 [**产品能力**](./capability/) 了解各能力域的公共 API 契约与运行时边界。
+
+### 🏗️ 我想理解或修改 RAGFlow
+
+如果你是新的代码贡献者、正在排查问题的维护者，或需要了解 RAGFlow 的架构设计：
+
+1. 从 [**运行时架构**](./architecture/runtime-topology.mdx) 了解 Python 与 Go 双 API 服务器的选择机制、后台 Worker 及共享后端服务。
+2. 通过 [**产品能力**](./capability/) 页面按功能领域找到源代码归属、数据流及验证测试位置。
+3. 参考 [**贡献指南**](./capability/contributing.mdx) 添加或更新能力页面。
+
+## 初始能力覆盖
+
+当前活地图覆盖以下六项初始产品能力：
+
+| 能力 | 说明 |
+|------|------|
+| [数据集管理](./capability/dataset.mdx) | 知识库的创建、配置、索引与元数据管理 |
+| [文档与摄入](./capability/document-ingestion.mdx) | 文件上传、解析、文档状态管理与批量操作 |
+| [分块与检索](./capability/chunk-retrieval.mdx) | 文档切块、检索测试与搜索配置 |
+| [会话与对话](./capability/chat-session.mdx) | 对话助手的 CRUD、会话生命周期管理与流式补全 |
+| [智能体](./capability/agent.mdx) | Agent 模板的创建、配置与会话执行 |
+| [文件管理](./capability/file.mdx) | 文件系统浏览、上传、移动与版本管理 |
+
+## 黄金路径
+
+三条端到端集成路径帮助你快速上手：
+
+- [**文档摄入与检索**](./journey/upload-parse-retrieve.mdx) — 上传文档 → 解析 → 检索
+- [**对话补全**](./journey/chat-session.mdx) — 创建助手 → 发起会话 → 流式对话
+- [**Agent 执行**](./journey/agent-session.mdx) — 创建 Agent → 发起会话 → 获取结果
+
+## 生成视图
+
+以下视图由源代码与策略清单自动生成并随仓库提交：
+
+- [**公共 API 清单**](./generated/) — 面向外部集成方的公共路由及能力归类
+- [**维护者清单**](./generated/) — 包含所有可见性分类的完整路由清单
+- [**Python/Go 对等视图**](./generated/) — 双运行时支持情况对比
+
+## 相关参考
+
+- [HTTP API 参考](../references/http_api_reference.md) — 各端点的详细请求/响应文档
+- [Python API 参考](../references/python_api_reference.md) — Python SDK 接口文档
+- [开发指南](../develop/) — 从源码启动、构建镜像与贡献
+- [用户指南](../guides/) — 面向 RAGFlow 用户的操作指引

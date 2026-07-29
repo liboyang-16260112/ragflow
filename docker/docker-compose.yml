@@ -3,6 +3,7 @@ include:
 # To ensure that the container processes the locally modified `service_conf.yaml.template` instead of the one included in its image, you need to mount the local `service_conf.yaml.template` to the container.
 services:
   deepdoc:
+    container_name: fmoss-rag-deepdoc
     image: ${DEEPDOC_IMAGE:-deepdoc_oss:latest}
     profiles:
       - deepdoc
@@ -19,9 +20,7 @@ services:
       retries: 60
 
   ragflow-cpu:
-    depends_on:
-      mysql:
-        condition: service_healthy
+    container_name: fmoss-rag-server-cpu
     profiles:
       - cpu
     image: ${RAGFLOW_IMAGE}
@@ -70,9 +69,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   ragflow-gpu:
-    depends_on:
-      mysql:
-        condition: service_healthy
+    container_name: fmoss-rag-server-gpu
     profiles:
       - gpu
     image: ${RAGFLOW_IMAGE}

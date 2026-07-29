@@ -1,0 +1,8 @@
+{
+  "label": "黄金路径",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "端到端的集成路径，覆盖文档上传/解析/检索、会话对话及 Agent 执行的完整流程。"
+  }
+}

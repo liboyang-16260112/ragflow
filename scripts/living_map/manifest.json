@@ -1,0 +1,1476 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasets",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/dataset.py",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasets",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/dataset.py",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1datasets",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/dataset.py",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/dataset.py",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/datasets/{dataset_id}",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1datasetsdataset_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/dataset.py",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/documents",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_iddocuments",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/document.py",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/documents",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_iddocuments",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/document.py",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets/{dataset_id}/documents",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1datasetsdataset_iddocuments",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/document.py",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_iddocumentsdocument_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/document.py",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#patch-apiv1datasetsdataset_iddocumentsdocument_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/document.py",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_iddocumentsdocument_idchunks",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_iddocumentsdocument_idchunks",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#patch-apiv1datasetsdataset_iddocumentsdocument_idchunks",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1datasetsdataset_iddocumentsdocument_idchunks",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_iddocumentsdocument_idchunkschunk_id",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#patch-apiv1datasetsdataset_iddocumentsdocument_idchunkschunk_id",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/chunks",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_idchunks",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets/{dataset_id}/chunks",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1datasetsdataset_idchunks",
+    "contract_test": "api/apps/restful_apis/chunk_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/search",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_idsearch",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/dataset.py",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1files",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/files",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1files",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/files",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1files",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1filesid",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/files/link-to-datasets",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1fileslink-to-datasets",
+    "contract_test": "api/apps/restful_apis/file2document_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/chats",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1chats",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chats",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chats",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/chats",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1chats",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/chats/{chat_id}",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1chatschat_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/chats/{chat_id}",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1chatschat_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/chats/{chat_id}",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1chatschat_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat/completions",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chatcompletions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/chat.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/chats/{chat_id}/sessions",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1chatschat_idsessions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/session.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chats/{chat_id}/sessions",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chatschat_idsessions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/session.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/chats/{chat_id}/sessions",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1chatschat_idsessions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/session.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/chats/{chat_id}/sessions/{session_id}",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1chatschat_idsessionssession_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/session.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/chats/{chat_id}/sessions/{session_id}",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#patch-apiv1chatschat_idsessionssession_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/session.py",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/agents/chat/completions",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1agentschatcompletions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1agents",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1agents",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/agents",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1agents",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/agents/{agent_id}",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1agentsagent_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/agents/{agent_id}",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1agentsagent_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/agents/{agent_id}",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1agentsagent_id",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/agents/{agent_id}/sessions",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1agentsagent_idsessions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/agents/{agent_id}/sessions",
+    "capability": "智能体",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1agentsagent_idsessions",
+    "sdk_reference": "sdk/python/ragflow_sdk/modules/agent.py",
+    "contract_test": "api/apps/restful_apis/agent_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/index",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_idindex",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/index",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idindex",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets/{dataset_id}/index",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1datasetsdataset_idindex",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/tags/aggregation",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetstagsaggregation",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/metadata/flattened",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsmetadataflattened",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/searches",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1searches",
+    "contract_test": "api/apps/restful_apis/search_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/searches",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1searches",
+    "contract_test": "api/apps/restful_apis/search_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/searches/{search_id}",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1searchessearch_id",
+    "contract_test": "api/apps/restful_apis/search_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/searches/{search_id}",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1searchessearch_id",
+    "contract_test": "api/apps/restful_apis/search_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/searches/{search_id}",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1searchessearch_id",
+    "contract_test": "api/apps/restful_apis/search_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/searches/{search_id}/completions",
+    "capability": "分块与检索",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1searchessearch_idcompletions",
+    "contract_test": "api/apps/restful_apis/search_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "capability": "认证",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1authlogin",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "capability": "认证",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1authlogout",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/login/channels",
+    "capability": "认证",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1authloginchannels",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1users",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/users/me",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1usersme",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/users/me",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#patch-apiv1usersme",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/user/setting",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1usersetting",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/user/setting/password",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1usersettingpassword",
+    "contract_test": "api/apps/restful_apis/user_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/tenants",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1tenants",
+    "contract_test": "api/apps/restful_apis/tenant_api.py"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/tenants/{tenant_id}",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#patch-apiv1tenantstenant_id",
+    "contract_test": "api/apps/restful_apis/tenant_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/tenants/{tenant_id}/users",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1tenantstenant_idusers",
+    "contract_test": "api/apps/restful_apis/tenant_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/tenants/{tenant_id}/users",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1tenantstenant_idusers",
+    "contract_test": "api/apps/restful_apis/tenant_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/tenants/{tenant_id}/users",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1tenantstenant_idusers",
+    "contract_test": "api/apps/restful_apis/tenant_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/system/status",
+    "capability": "系统管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1systemstatus",
+    "contract_test": "api/apps/restful_apis/system_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/system/healthz",
+    "capability": "系统管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1systemhealthz",
+    "contract_test": "api/apps/restful_apis/system_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/system/version",
+    "capability": "系统管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1systemversion",
+    "contract_test": "api/apps/restful_apis/system_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/system/config",
+    "capability": "系统管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1systemconfig",
+    "contract_test": "api/apps/restful_apis/system_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/system/ping",
+    "capability": "系统管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1systemping",
+    "contract_test": "api/apps/restful_apis/system_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/language",
+    "capability": "系统管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "go-only",
+    "http_reference": "references/http_api_reference.md#get-apiv1language",
+    "contract_test": "internal/router/router.go"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/models",
+    "capability": "模型管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1models",
+    "contract_test": "api/apps/restful_apis/models_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/models",
+    "capability": "模型管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1models",
+    "contract_test": "api/apps/restful_apis/models_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/models",
+    "capability": "模型管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1models",
+    "contract_test": "api/apps/restful_apis/models_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/connectors",
+    "capability": "连接器管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1connectors",
+    "contract_test": "api/apps/restful_apis/connector_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/connectors",
+    "capability": "连接器管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1connectors",
+    "contract_test": "api/apps/restful_apis/connector_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/connectors",
+    "capability": "连接器管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1connectors",
+    "contract_test": "api/apps/restful_apis/connector_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/memory",
+    "capability": "记忆管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1memory",
+    "contract_test": "api/apps/restful_apis/memory_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/memory",
+    "capability": "记忆管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1memory",
+    "contract_test": "api/apps/restful_apis/memory_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/memory",
+    "capability": "记忆管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1memory",
+    "contract_test": "api/apps/restful_apis/memory_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/mcp",
+    "capability": "MCP 服务",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1mcp",
+    "contract_test": "api/apps/restful_apis/mcp_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/documents/parse",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_iddocumentsparse",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/documents/stop",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_iddocumentsstop",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/documents/upload",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1documentsupload",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/documents/{id}",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1documentsid",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/documents/{id}",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1documentsid",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/documents/{id}",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1documentsid",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/documents/{id}/preview",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1documentsidpreview",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/graph",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idgraph",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chats/{chat_id}/completions",
+    "capability": "会话管理",
+    "visibility": "compatibility",
+    "stability": "deprecated",
+    "runtime": "python",
+    "canonical_replacement": "POST /api/v1/chat/completions"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/agents/{agent_id}/completions",
+    "capability": "智能体",
+    "visibility": "compatibility",
+    "stability": "deprecated",
+    "runtime": "python",
+    "canonical_replacement": "POST /api/v1/agents/chat/completions"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/knowledge_graph",
+    "capability": "数据集管理",
+    "visibility": "compatibility",
+    "stability": "deprecated",
+    "runtime": "python",
+    "canonical_replacement": "GET /api/v1/datasets/{dataset_id}/graph"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets/{dataset_id}/knowledge_graph",
+    "capability": "数据集管理",
+    "visibility": "compatibility",
+    "stability": "deprecated",
+    "runtime": "python",
+    "canonical_replacement": "DELETE /api/v1/datasets/{dataset_id}/graph"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/run_graphrag",
+    "capability": "数据集管理",
+    "visibility": "compatibility",
+    "stability": "deprecated",
+    "runtime": "python",
+    "canonical_replacement": "POST /api/v1/datasets/{dataset_id}/index"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/trace_graphrag",
+    "capability": "数据集管理",
+    "visibility": "compatibility",
+    "stability": "deprecated",
+    "runtime": "python",
+    "canonical_replacement": "GET /api/v1/datasets/{dataset_id}/index"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/tenant/list",
+    "capability": "用户与租户管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1tenantlist",
+    "contract_test": "api/apps/restful_apis/tenant_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/tenant/chunk_store",
+    "capability": "系统管理",
+    "visibility": "internal",
+    "stability": "stable",
+    "runtime": "go"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/tenant/chunk_store",
+    "capability": "系统管理",
+    "visibility": "internal",
+    "stability": "stable",
+    "runtime": "go"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/tenant/metadata_store",
+    "capability": "系统管理",
+    "visibility": "internal",
+    "stability": "stable",
+    "runtime": "go"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/tenant/metadata_store",
+    "capability": "系统管理",
+    "visibility": "internal",
+    "stability": "stable",
+    "runtime": "go"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/tenant/dev_insert_chunks_from_file",
+    "capability": "系统管理",
+    "visibility": "internal",
+    "stability": "stable",
+    "runtime": "go"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/tenant/dev_insert_metadata_from_file",
+    "capability": "系统管理",
+    "visibility": "internal",
+    "stability": "stable",
+    "runtime": "go"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat/mindmap",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chatmindmap",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat/recommendation",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chatrecommendation",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/openai/{chat_id}/chat/completions",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1openaichat_idchatcompletions",
+    "contract_test": "api/apps/restful_apis/openai_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat/audio/speech",
+    "capability": "会话与对话",
+    "visibility": "beta",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chataudiospeech",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat/audio/transcription",
+    "capability": "会话与对话",
+    "visibility": "beta",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chataudiotranscription",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/searchbots/related_questions",
+    "capability": "分块与检索",
+    "visibility": "beta",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1searchbotsrelated_questions",
+    "contract_test": "api/apps/restful_apis/bot_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/searchbots/retrieval_test",
+    "capability": "分块与检索",
+    "visibility": "beta",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1searchbotsretrieval_test",
+    "contract_test": "api/apps/restful_apis/bot_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chatbots/{dialog_id}/completions",
+    "capability": "会话与对话",
+    "visibility": "beta",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1chatbotsdialog_idcompletions",
+    "contract_test": "api/apps/restful_apis/bot_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/chatbots/{dialog_id}/info",
+    "capability": "会话与对话",
+    "visibility": "beta",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1chatbotsdialog_idinfo",
+    "contract_test": "api/apps/restful_apis/bot_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}/feedback",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1chatschat_idsessionssession_idmessagesmsg_idfeedback",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}",
+    "capability": "会话与对话",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1chatschat_idsessionssession_idmessagesmsg_id",
+    "contract_test": "api/apps/restful_apis/chat_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/files/move",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1filesmove",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}/ancestors",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1filesidancestors",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}/parent",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1filesidparent",
+    "contract_test": "api/apps/restful_apis/file_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}/versions",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1filesidversions",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/folders/{folder_id}/commits",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1foldersfolder_idcommits",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/commits",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idcommits",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/commits/diff",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idcommitsdiff",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/commits/{commit_id}",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idcommitscommit_id",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/commits/{commit_id}/files",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idcommitscommit_idfiles",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/commits/{commit_id}/tree",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idcommitscommit_idtree",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/commits/{commit_id}/files/{file_id}/content",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idcommitscommit_idfilesfile_idcontent",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/folders/{folder_id}/changes",
+    "capability": "文件管理",
+    "visibility": "public",
+    "stability": "experimental",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1foldersfolder_idchanges",
+    "contract_test": "api/apps/restful_apis/file_commit_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/tags",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idtags",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/datasets/{dataset_id}/tags",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1datasetsdataset_idtags",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/datasets/{dataset_id}/tags",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1datasetsdataset_idtags",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/embedding/check",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_idembeddingcheck",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/metadata/summary",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idmetadatasummary",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/ingestions/summary",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idingestionssummary",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/ingestions",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idingestions",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/ingestions/{log_id}",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idingestionslog_id",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/datasets/{dataset_id}/metadata/config",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1datasetsdataset_idmetadataconfig",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/datasets/{dataset_id}/metadata/config",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1datasetsdataset_idmetadataconfig",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/datasets/{dataset_id}/documents/{document_id}/metadata/config",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1datasetsdataset_iddocumentsdocument_idmetadataconfig",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/metadata/update",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_idmetadataupdate",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/{dataset_id}/documents/batch-update-status",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetsdataset_iddocumentsbatch-update-status",
+    "contract_test": "api/apps/restful_apis/document_api.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ingestion/tasks",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#get-apiv1ingestiontasks",
+    "contract_test": "api/apps/restful_apis/task_api.py"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/ingestion/tasks",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#put-apiv1ingestiontasks",
+    "contract_test": "api/apps/restful_apis/task_api.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/ingestion/tasks",
+    "capability": "文档与摄入",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#delete-apiv1ingestiontasks",
+    "contract_test": "api/apps/restful_apis/task_api.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/datasets/search",
+    "capability": "数据集管理",
+    "visibility": "public",
+    "stability": "stable",
+    "runtime": "both",
+    "http_reference": "references/http_api_reference.md#post-apiv1datasetssearch",
+    "contract_test": "api/apps/restful_apis/dataset_api.py"
+  }
+]

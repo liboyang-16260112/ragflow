@@ -1,0 +1,8 @@
+{
+  "label": "产品能力",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "按产品能力组织的导航页面——每项能力涵盖其目标、边界、公共契约、运行时流程、源代码归属、依赖和验证测试。"
+  }
+}

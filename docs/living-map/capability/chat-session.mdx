@@ -1,0 +1,93 @@
+---
+title: 会话与对话
+sidebar_position: 4
+---
+
+# 会话与对话
+
+## 目标与边界
+
+本能力涵盖聊天助手（Chat）的 CRUD、对话会话（Session）的生命周期管理、流式对话补全、OpenAI 兼容接口、思维导图与推荐问题。**不属于本能力的**：Agent 模板的管理与执行（见[智能体](./agent.mdx)）。
+
+## 公共契约
+
+### HTTP API
+
+> 以下清单由生成视图自动同步，列表项请以 [公共 API 清单](../generated/) 为准。
+
+| 方法 | 路径 | 可见性 | 稳定性 | 运行时 |
+|------|------|--------|--------|--------|
+| GET | `/api/v1/chats` | public | stable | both |
+| POST | `/api/v1/chats` | public | stable | both |
+| DELETE | `/api/v1/chats` | public | stable | both |
+| GET | `/api/v1/chats/{chat_id}` | public | stable | both |
+| PUT | `/api/v1/chats/{chat_id}` | public | stable | both |
+| DELETE | `/api/v1/chats/{chat_id}` | public | stable | both |
+| PATCH | `/api/v1/chats/{chat_id}` | public | stable | both |
+| POST | `/api/v1/chat/completions` | public | stable | both |
+| POST | `/api/v1/chat/mindmap` | public | stable | both |
+| POST | `/api/v1/chat/recommendation` | public | stable | both |
+| GET | `/api/v1/chats/{chat_id}/sessions` | public | stable | both |
+| POST | `/api/v1/chats/{chat_id}/sessions` | public | stable | both |
+| DELETE | `/api/v1/chats/{chat_id}/sessions` | public | stable | both |
+| GET | `/api/v1/chats/{chat_id}/sessions/{session_id}` | public | stable | both |
+| PATCH | `/api/v1/chats/{chat_id}/sessions/{session_id}` | public | stable | both |
+| DELETE | `/api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}` | public | stable | both |
+| PUT | `/api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}/feedback` | public | stable | both |
+| POST | `/api/v1/openai/{chat_id}/chat/completions` | public | stable | both |
+| POST | `/api/v1/chat/audio/speech` | beta | experimental | both |
+| POST | `/api/v1/chat/audio/transcription` | beta | experimental | both |
+
+每个端点的详细请求参数与响应格式请点击对应的 [HTTP 参考](../references/http_api_reference.md) 链接。
+
+### Python SDK
+
+- `ragflow_sdk.modules.chat.Chat` — 聊天助手的 CRUD 与会话管理
+- `ragflow_sdk.modules.session.Session` — 会话的创建、查询、删除
+- 详见 [Python API 参考](../references/python_api_reference.md)
+
+## 运行时流程
+
+```
+Client                    API Server                  LLM Provider
+  │                           │                           │
+  ├─ POST /chat/completions ─►│                           │
+  │                           ├── resolve session ──┐     │
+  │                           │◄── session data ────┘     │
+  │                           ├── retrieve chunks ──┐     │
+  │                           │◄── chunks ──────────┘     │
+  │                           ├── build prompt ──────────►│
+  │                           │◄── streaming tokens ──────┤
+  │◄── SSE: {delta: true} ────┤                           │
+  │◄── SSE: {delta: true} ────┤                           │
+  │◄── SSE: {delta: false} ───┤                           │
+```
+
+对话补全流程：解析会话上下文 → 检索相关分块 → 构造提示词 → 调用 LLM → 流式返回。
+
+## 源代码归属
+
+| 组件 | 源路径 |
+|------|--------|
+| Python API | `api/apps/restful_apis/chat_api.py`、`openai_api.py` |
+| Python 服务层 | `api/apps/services/chat_api_service.py` |
+| Go API | `internal/router/router.go`（`chats`、`chat` 组） |
+| Go Handler | `internal/handler/chat_handler.go`、`chat_session_handler.go`、`openai_chat_handler.go` |
+| SDK 模块 | `sdk/python/ragflow_sdk/modules/chat.py`、`session.py` |
+
+## 依赖
+
+- **存储**: MySQL（助手与会话数据）、Redis（会话状态）、Elasticsearch/InfiniKV（检索）
+- **外部服务**: LLM 提供商（OpenAI、Ollama 等，取决于助手配置）
+
+## 验证测试
+
+| 类型 | 位置 | 覆盖点 |
+|------|------|--------|
+| Python API 测试 | `api/apps/restful_apis/chat_api.py` | 助手 CRUD、会话管理、流式补全 |
+| Python API 测试 | `api/apps/restful_apis/openai_api.py` | OpenAI 兼容接口 |
+| Go 路由测试 | `internal/router/router_test.go` | Go 端路由注册 |
+
+## 变更记录
+
+- 初始版本。

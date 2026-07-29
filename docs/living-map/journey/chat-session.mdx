@@ -1,0 +1,185 @@
+---
+title: 对话补全
+sidebar_position: 2
+---
+
+# 黄金路径：对话补全
+
+本文档提供从创建聊天助手到流式对话的完整端到端流程。适用于需要通过 RAGFlow 实现基于知识库的问答对话的集成场景。
+
+## 前置条件
+
+- 已获取有效的 API Token（见[认证指南](../integration/authentication.mdx)）
+- 至少有一个已完成解析的知识库（见[文档摄入与检索](./upload-parse-retrieve.mdx)）
+- 理解流式响应格式（见[对接指南中的流式响应](../integration/authentication.mdx#流式响应)）
+
+## 步骤概览
+
+```
+1. 创建聊天助手 → 2. 发起会话 → 3. 发送问题（流式补全） → 4. 获取回答与参考
+```
+
+## 详细步骤
+
+### 第一步：创建聊天助手
+
+创建一个聊天助手并关联知识库。
+
+```http
+POST /api/v1/chats
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "name": "我的知识库助手",
+  "dataset_ids": ["dataset_abc123"],
+  "prompt": "你是基于知识库的问答助手，请根据提供的信息回答问题。"
+}
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "id": "chat_xyz789",
+    "name": "我的知识库助手"
+  }
+}
+```
+
+> **检查点**：记录返回的 `chat_id`。
+
+参见 [POST /api/v1/chats](../references/http_api_reference.md#post-apiv1chats)
+
+### 第二步：发起会话
+
+在助手内创建一个新会话。
+
+```http
+POST /api/v1/chats/{chat_id}/sessions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "name": "第一次对话"
+}
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "id": "session_abc123"
+  }
+}
+```
+
+> **检查点**：记录返回的 `session_id`。同一助手下可创建多个会话，每个会话保持独立上下文。
+
+参见 [POST /api/v1/chats/{chat_id}/sessions](../references/http_api_reference.md#post-apiv1chatschat_idsessions)
+
+### 第三步：发送问题（流式补全）
+
+向会话发送问题，启用流式响应以实时获得回答。
+
+```http
+POST /api/v1/chat/completions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "session_id": "session_abc123",
+  "question": "请总结知识库中的主要观点",
+  "stream": true
+}
+```
+
+流式响应（SSE）：
+
+```
+data: {"code": 0, "data": {"answer": "根据", "reference": {}, "audio": null}, "delta": true}
+
+data: {"code": 0, "data": {"answer": "知识库", "reference": {}, "audio": null}, "delta": true}
+
+...
+
+data: {"code": 0, "data": {"answer": "。", "reference": {"doc_1": [...], "doc_2": [...]}, "audio": null}, "delta": false}
+```
+
+> **检查点**：当 `delta` 变为 `false` 时，流结束。`reference` 字段包含引文信息。
+
+参见 [POST /api/v1/chat/completions](../references/http_api_reference.md#post-apiv1chatcompletions)
+
+### 第四步（可选）：查询会话历史
+
+获取会话中的消息记录：
+
+```http
+GET /api/v1/chats/{chat_id}/sessions/{session_id}
+Authorization: Bearer <your-token>
+```
+
+参见 [GET /api/v1/chats/{chat_id}/sessions/{session_id}](../references/http_api_reference.md#get-apiv1chatschat_idsessionssession_id)
+
+## 可选路径
+
+### OpenAI 兼容模式
+
+如果你已有使用 OpenAI API 的代码，可以使用 OpenAI 兼容接口：
+
+```http
+POST /api/v1/openai/{chat_id}/chat/completions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "model": "gpt-3.5-turbo",
+  "messages": [
+    {"role": "user", "content": "你好"}
+  ],
+  "stream": true
+}
+```
+
+参见 [POST /api/v1/openai/{chat_id}/chat/completions](../references/http_api_reference.md#post-apiv1openaichat_idchatcompletions)
+
+### 删除会话
+
+不再需要的会话可以通过以下方式删除：
+
+```http
+DELETE /api/v1/chats/{chat_id}/sessions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "ids": ["session_abc123"]
+}
+```
+
+### 更新助手配置
+
+如需调整助手的知识库、提示词或模型设置：
+
+```http
+PUT /api/v1/chats/{chat_id}
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "name": "更新后的助手名",
+  "dataset_ids": ["dataset_abc123", "dataset_def456"],
+  "prompt": "新的提示词..."
+}
+```
+
+参见 [PUT /api/v1/chats/{chat_id}](../references/http_api_reference.md#put-apiv1chatschat_id)
+
+## 相关能力页面
+
+- [会话与对话](../capability/chat-session.mdx)
+- [数据集管理](../capability/dataset.mdx)

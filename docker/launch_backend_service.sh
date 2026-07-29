@@ -200,7 +200,11 @@ ensure_db_init() {
 }
 
 run_mysql_migrations() {
-    tools/scripts/run_migrations.sh
+  local config_path="conf/service_conf.yaml"
+  if [[ -f "conf/local.service_conf.yaml" ]]; then
+    config_path="conf/local.service_conf.yaml"
+  fi
+  tools/scripts/run_migrations.sh "$config_path"
 }
 
 prepare_for_go() {

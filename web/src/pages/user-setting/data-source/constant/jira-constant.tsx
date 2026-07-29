@@ -54,7 +54,7 @@ export const jiraConstant = (t: TFunction) => [
     name: 'config.project_key',
     type: FormFieldType.Text,
     required: false,
-    placeholder: 'RAGFlow',
+    placeholder: 'FMoss-RAG',
     tooltip: t('setting.jiraProjectKeyTip'),
   },
   {

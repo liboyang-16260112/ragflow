@@ -5,6 +5,7 @@ include:
 
 services:
   ragflow-cpu:
+    container_name: fmoss-rag-server-cpu
     depends_on:
       mysql:
         condition: service_healthy
@@ -30,6 +31,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   ragflow-gpu:
+    container_name: fmoss-rag-server-gpu
     depends_on:
       mysql:
         condition: service_healthy

@@ -1,0 +1,82 @@
+---
+title: 分块与检索
+sidebar_position: 3
+---
+
+# 分块与检索
+
+## 目标与边界
+
+本能力涵盖文本分块的 CRUD 操作与搜索配置管理。分块是文档的最小检索单元，检索配置定义了搜索策略与参数。**不属于本能力的**：数据集的索引管理（见[数据集管理](./dataset.mdx)）、文档的上传与解析（见[文档与摄入](./document-ingestion.mdx)）。
+
+## 公共契约
+
+### HTTP API
+
+> 以下清单由生成视图自动同步，列表项请以 [公共 API 清单](../generated/) 为准。
+
+| 方法 | 路径 | 可见性 | 稳定性 | 运行时 |
+|------|------|--------|--------|--------|
+| GET | `/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks` | public | stable | both |
+| POST | `/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks` | public | stable | both |
+| PATCH | `/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks` | public | stable | both |
+| DELETE | `/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks` | public | stable | both |
+| GET | `/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}` | public | stable | both |
+| PATCH | `/api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}` | public | stable | both |
+| POST | `/api/v1/datasets/{dataset_id}/chunks` | public | stable | both |
+| DELETE | `/api/v1/datasets/{dataset_id}/chunks` | public | stable | both |
+| POST | `/api/v1/datasets/{dataset_id}/search` | public | stable | both |
+| GET | `/api/v1/searches` | public | stable | both |
+| POST | `/api/v1/searches` | public | stable | both |
+| GET | `/api/v1/searches/{search_id}` | public | stable | both |
+| PUT | `/api/v1/searches/{search_id}` | public | stable | both |
+| DELETE | `/api/v1/searches/{search_id}` | public | stable | both |
+| POST | `/api/v1/searches/{search_id}/completions` | public | stable | both |
+
+每个端点的详细请求参数与响应格式请点击对应的 [HTTP 参考](../references/http_api_reference.md) 链接。
+
+### Python SDK
+
+- `ragflow_sdk.modules.dataset.Dataset.search()` — 在数据集内检索
+- 详见 [Python API 参考](../references/python_api_reference.md)
+
+## 运行时流程
+
+```
+Client                    API Server                  ES / InfiniKV
+  │                           │                           │
+  ├─ POST /datasets/{id}/search►                          │
+  │                           ├── build query ───────────►│
+  │                           │◄── results + scores ──────┤
+  │                           ├── merge / re-rank         │
+  │◄─ 200 {chunks, scores} ──┤                           │
+```
+
+检索支持关键词搜索、向量搜索与混合搜索模式。搜索配置（`/searches`）允许预设检索参数以便重复使用。
+
+## 源代码归属
+
+| 组件 | 源路径 |
+|------|--------|
+| Python API | `api/apps/restful_apis/chunk_api.py`、`search_api.py` |
+| Python 服务层 | `api/apps/services/chunk_api_service.py` |
+| Go API | `internal/router/router.go`（`chunkHandler` 与 `searchHandler`） |
+| Go Handler | `internal/handler/chunk_handler.go`、`search_handler.go` |
+| SDK 模块 | `sdk/python/ragflow_sdk/modules/dataset.py`（search 方法） |
+
+## 依赖
+
+- **存储**: Elasticsearch/InfiniKV（分块索引与全文检索）、MySQL（分块元数据）
+- **嵌入模型**: 向量检索依赖嵌入模型的可用性
+
+## 验证测试
+
+| 类型 | 位置 | 覆盖点 |
+|------|------|--------|
+| Python API 测试 | `api/apps/restful_apis/chunk_api.py` | 分块 CRUD |
+| Python API 测试 | `api/apps/restful_apis/search_api.py` | 搜索 CRUD 与补全 |
+| Go 路由测试 | `internal/router/datasets_search_route_test.go` | Go 端搜索路由 |
+
+## 变更记录
+
+- 初始版本。

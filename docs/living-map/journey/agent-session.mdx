@@ -1,0 +1,188 @@
+---
+title: Agent 执行
+sidebar_position: 3
+---
+
+# 黄金路径：Agent 执行
+
+本文档提供从创建 Agent 到获取执行结果的完整端到端流程。Agent 比普通聊天助手多了工具调用与多步推理能力。
+
+## 前置条件
+
+- 已获取有效的 API Token（见[认证指南](../integration/authentication.mdx)）
+- 了解 Agent 的基本概念与可用工具（见[Agent 介绍](../guides/agent/agent_introduction.md)）
+- 理解流式响应格式（见[对接指南中的流式响应](../integration/authentication.mdx#流式响应)）
+
+## 步骤概览
+
+```
+1. 创建 Agent → 2. 发起会话 → 3. 发送任务 → 4. 获取结果与工具调用记录
+```
+
+## 详细步骤
+
+### 第一步：创建 Agent
+
+创建一个 Agent 模板。
+
+```http
+POST /api/v1/agents
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "name": "数据分析 Agent",
+  "description": "自动分析上传的文档并生成摘要报告",
+  "llm_id": "model_abc123",
+  "tools": ["search", "calculator", "summarize"]
+}
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "id": "agent_xyz789",
+    "name": "数据分析 Agent"
+  }
+}
+```
+
+> **检查点**：记录返回的 `agent_id`。
+
+参见 [POST /api/v1/agents](../references/http_api_reference.md#post-apiv1agents)
+
+### 第二步：发起会话
+
+在 Agent 内创建一个新会话。
+
+```http
+POST /api/v1/agents/{agent_id}/sessions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "name": "分析任务 2026-07"
+}
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "id": "session_def456"
+  }
+}
+```
+
+> **检查点**：记录返回的 `session_id`。
+
+参见 [POST /api/v1/agents/{agent_id}/sessions](../references/http_api_reference.md#post-apiv1agentsagent_idsessions)
+
+### 第三步：发送任务（流式补全）
+
+向 Agent 会话发送任务。
+
+```http
+POST /api/v1/agents/chat/completions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "session_id": "session_def456",
+  "question": "请分析这个数据集并给出三个关键洞察",
+  "stream": true
+}
+```
+
+流式响应（SSE）：
+
+```
+data: {"code": 0, "data": {"answer": "让我", "reference": {}, "audio": null}, "delta": true}
+...
+data: {"code": 0, "data": {"answer": "我正在搜索知识库中的相关数据...", "reference": {}, "audio": null}, "delta": true}
+...
+data: {"code": 0, "data": {"answer": "", "reference": {}, "tool_calls": [{"name": "search", "args": {...}}], "audio": null}, "delta": true}
+...
+data: {"code": 0, "data": {"answer": "根据分析，三个关键洞察是：1. ... 2. ... 3. ...", "reference": {"chunks": [...]}, "audio": null}, "delta": false}
+```
+
+> **检查点**：
+> - `delta: true` 表示仍在处理（包括工具调用阶段）
+> - `tool_calls` 字段显示 Agent 正在调用的工具
+> - `delta: false` 表示 Agent 执行完成，响应的 `answer` 包含最终结果
+
+参见 [POST /api/v1/agents/chat/completions](../references/http_api_reference.md#post-apiv1agentschatcompletions)
+
+### 第四步（可选）：查询会话历史
+
+获取 Agent 会话中的完整交互记录（包括工具调用轨迹）。
+
+```http
+GET /api/v1/agents/{agent_id}/sessions
+Authorization: Bearer <your-token>
+```
+
+参见 [GET /api/v1/agents/{agent_id}/sessions](../references/http_api_reference.md#get-apiv1agentsagent_idsessions)
+
+## Agent 执行模式
+
+### 流式模式（推荐）
+
+设置 `"stream": true` 时，Agent 每一步推理和工具调用都实时推送：
+
+- **思考阶段**：Agent 分析问题，确定下一步行动
+- **工具调用阶段**：Agent 调用工具并获取结果
+- **综合阶段**：Agent 综合所有信息生成最终答案
+
+### 非流式模式
+
+设置 `"stream": false`（默认）时，Agent 完成所有推理步骤后一次性返回结果。
+
+```http
+POST /api/v1/agents/chat/completions
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "session_id": "session_def456",
+  "question": "请分析这个数据集",
+  "stream": false
+}
+```
+
+## 可选路径
+
+### 更新 Agent 配置
+
+调整 Agent 的模型、工具或指令：
+
+```http
+PUT /api/v1/agents/{agent_id}
+Authorization: Bearer <your-token>
+Content-Type: application/json
+
+{
+  "name": "更新后的 Agent",
+  "llm_id": "model_new",
+  "tools": ["search", "calculator", "summarize", "chart"]
+}
+```
+
+参见 [PUT /api/v1/agents/{agent_id}](../references/http_api_reference.md#put-apiv1agentsagent_id)
+
+### 删除 Agent
+
+```http
+DELETE /api/v1/agents/{agent_id}
+Authorization: Bearer <your-token>
+```
+
+## 相关能力页面
+
+- [智能体](../capability/agent.mdx)
+- [会话与对话](../capability/chat-session.mdx)

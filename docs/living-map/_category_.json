@@ -1,0 +1,11 @@
+{
+  "label": "项目活地图",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "RAGFlow 项目的入口导航地图——将产品能力、外部 API、运行时架构、代码实现与测试验证连接在一起。"
+  },
+  "customProps": {
+    "sidebarIcon": "LucideMap"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "label": "运行时架构",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "RAGFlow 的运行拓扑、仓库边界、Python 与 Go 双运行时选择，以及共享后端服务。"
+  }
+}

@@ -1,0 +1,8764 @@
+[
+  {
+    "key": "DELETE /api/v1/agents/{agent_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/agents/{agent_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/agents/{agent_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/chat-channels/{channel_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/chats",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/chats/{chat_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/chats/{chat_id}/sessions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/compilation_template_groups/{group_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/connectors/{connector_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/ingestion/tasks",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/artifacts",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/chunks",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/documents",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/documents/{document_id}/structure/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/graph",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/index",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/knowledge_graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "python",
+    "capability": "数据集管理",
+    "visibility": "compatibility"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/nav",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/nav/{name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/skills",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/skills/{skill_kwd}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/tags",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/datasets/{dataset_id}/{index_type}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/documents/{id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/files",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/langfuse/api-key",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/mcp/servers/{mcp_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/memories/{memory_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/messages/{memory_id}:{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/messages/{memory_message}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/providers/{provider_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/providers/{provider_id_or_name}/instances",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/providers/{provider_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/providers/{provider_name}/instances",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/providers/{provider_name}/instances/{instance_name}/models",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/searches/{search_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /api/v1/skills/index",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/skills/spaces/{space_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/system/keys/{key}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/system/tokens/{key}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/system/tokens/{token}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/tenant/chunk_store",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "go",
+    "capability": "系统管理",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/tenant/metadata_store",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "go",
+    "capability": "系统管理",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /api/v1/tenants/{tenant_id}/users",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "DELETE /v1/agents/{agent_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/agents/{agent_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/agents/{agent_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/chat-channels/{channel_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/chats",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/chats/{chat_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/chats/{chat_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/compilation_template_groups/{group_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/connectors/{connector_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/artifacts",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/chunks",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/documents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/documents/{document_id}/structure/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/index",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/knowledge_graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/nav",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/nav/{name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/skills",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/skills/{skill_kwd}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/datasets/{dataset_id}/{index_type}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/files",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/langfuse/api-key",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/mcp/servers/{mcp_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/memories/{memory_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/messages/{memory_id}:{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/providers/{provider_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/providers/{provider_id_or_name}/instances",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/searches/{search_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/system/tokens/{token}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /v1/tenants/{tenant_id}/users",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /{canvas_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /{canvas_id}/run",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /{canvas_id}/sessions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /{canvas_id}/sessions/{session_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "DELETE /{canvas_id}/versions/{version_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agentbots/{agent_id}/inputs",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agentbots/{agent_id}/logs/{message_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agentbots/{shared_id}/logs/{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/agents/attachments/{attachment_id}/download",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/attachments/{attachment_id}/preview",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/download",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/prompts",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/templates",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/components/{component_id}/input-form",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/logs/{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/versions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/versions/{version_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/webhook/logs",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/all-models",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/all-models/{model_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/auth/login/channels",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "认证",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/auth/login/{channel}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/auth/oauth/{channel}/callback",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/chat-channels",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/chat-channels/{channel_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/chat-channels/{channel_id}/runtime",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/chatbots/{dialog_id}/info",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "beta"
+  },
+  {
+    "key": "GET /api/v1/chats",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/chats/{chat_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/chats/{chat_id}/sessions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/chats/{chat_id}/sessions/{session_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/compilation_template_groups",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/compilation_template_groups/{group_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/compilation_templates/builtins",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/compilation_templates/wiki_presets",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/components",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/connectors",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "连接器管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/connectors/box/oauth/web/callback",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/connectors/gmail/oauth/web/callback",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/connectors/google-drive/oauth/web/callback",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/connectors/{connector_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/connectors/{connector_id}/logs",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/ingestion/tasks",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/metadata/flattened",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/tags/aggregation",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/any_artifact",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/any_skill",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/artifacts",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/artifacts/alteration",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/artifacts/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/artifacts/{page_type}/{slug}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/artifacts_structure",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/artifacts_topics",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/changes",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/commits",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/commits/diff",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/commits/{commit_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/commits/{commit_id}/files",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/commits/{commit_id}/files/{file_id}/content",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/commits/{commit_id}/tree",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/documents",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/documents/{document_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/documents/{document_id}/structure/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/graph",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/index",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/ingestions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/ingestions/summary",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/ingestions/{log_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/knowledge_graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "python",
+    "capability": "数据集管理",
+    "visibility": "compatibility"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/metadata/config",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/metadata/summary",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/nav",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/nav/{name}/children",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/skills",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/skills/{skill_kwd}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/tags",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/trace_graphrag",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "python",
+    "capability": "数据集管理",
+    "visibility": "compatibility"
+  },
+  {
+    "key": "GET /api/v1/datasets/{dataset_id}/trace_raptor",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/dify/retrieval",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/dify/retrieval/health",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/document/download/{attachment_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/document/download/{doc_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/document/get/{doc_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/documents",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/documents/artifact/{filename}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/documents/images/{image_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/documents/{doc_id}/preview",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/documents/{document_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/documents/{id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/documents/{id}/preview",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/file/all_parent_folder",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/file/get/{file_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/file/list",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/file/parent_folder",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/file/root_folder",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/files",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/files/{file_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/files/{file_id}/ancestors",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/files/{file_id}/parent",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/files/{file_id}/versions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/files/{id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/files/{id}/ancestors",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/files/{id}/parent",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/files/{id}/versions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/changes",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/commits",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/commits/diff",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/commits/{commit_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/commits/{commit_id}/files",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/commits/{commit_id}/files/{file_id}/content",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/folders/{folder_id}/commits/{commit_id}/tree",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/langfuse/api-key",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/language",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "go-only",
+    "capability": "系统管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/mcp/servers",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/mcp/servers/{mcp_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/memories",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/memories/{memory_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/memories/{memory_id}/config",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/messages",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/messages/search",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/messages/{memory_id}:{message_id}/content",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/messages/{memory_message}/content",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/models",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "模型管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/models/default",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/pipelines",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/pipelines/{id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/plugin/tools",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_id_or_name}/instances",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_id_or_name}/models/{model_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances/{instance_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances/{instance_name}/balance",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances/{instance_name}/connection",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances/{instance_name}/models",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances/{instance_name}/tasks",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/instances/{instance_name}/tasks/{task_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/models",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/providers/{provider_name}/models/{model_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/searchbots/detail",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/searches",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/searches/{search_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/settings/enable-admin",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/skills/config",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/skills/space/by-folder",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/skills/spaces",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/skills/spaces/{space_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/config",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "系统管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/system/config/log",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/configs",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/environments",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/healthz",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "系统管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/system/keys",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/oceanbase/status",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/ping",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "系统管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/system/stats",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/status",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "系统管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/system/tokens",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/variables",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/variables/{var_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/system/version",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "系统管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/tenant/list",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/tenants",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/tenants/{tenant_id}/users",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/thumbnails",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/users/me",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "GET /api/v1/users/me/admin",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/users/me/meta",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/users/me/models",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/changes",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/commits",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/commits/diff",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/commits/{commit_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/commits/{commit_id}/files",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/commits/{commit_id}/files/{file_id}/content",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/workspace/{folder_id}/commits/{commit_id}/tree",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:1}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:2}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:3}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:4}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:5}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:6}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /api/v1/{dynamic:7}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /attachments/{attachment_id}/download",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /attachments/{attachment_id}/preview",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /auth/azure/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /auth/azure/login",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /auth/icbc/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /auth/oauth/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /auth/oauth/github/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /auth/oauth/lark/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /connectors/box/oauth/web/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /connectors/gmail/oauth/web/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /connectors/google-drive/oauth/web/callback",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /download",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /health",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /prompts",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /tags",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /templates",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agentbots/{agent_id}/inputs",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agentbots/{shared_id}/logs/{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/attachments/{attachment_id}/download",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/attachments/{attachment_id}/preview",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/download",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/prompts",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/templates",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/components/{component_id}/input-form",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/logs/{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/versions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/versions/{version_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/webhook/logs",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/auth/login/channels",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/auth/login/{channel}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/auth/oauth/{channel}/callback",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chat-channels",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chat-channels/{channel_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chat-channels/{channel_id}/runtime",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chatbots/{dialog_id}/info",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chats",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chats/{chat_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chats/{chat_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/chats/{chat_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/compilation_template_groups",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/compilation_template_groups/{group_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/compilation_templates/builtins",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/compilation_templates/wiki_presets",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connector/list",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connector/{connector_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connectors",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connectors/box/oauth/web/callback",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connectors/gmail/oauth/web/callback",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connectors/google-drive/oauth/web/callback",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connectors/{connector_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/connectors/{connector_id}/logs",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/metadata/flattened",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/tags/aggregation",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/any_artifact",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/any_skill",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/artifacts",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/artifacts/alteration",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/artifacts/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/artifacts/{page_type}/{slug}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/artifacts_structure",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/artifacts_topics",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/documents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/documents/{document_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/documents/{document_id}/structure/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/index",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/ingestions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/ingestions/summary",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/ingestions/{log_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/knowledge_graph",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/metadata/config",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/metadata/summary",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/nav",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/nav/{name}/children",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/skills",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/skills/{skill_kwd}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/trace_graphrag",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/datasets/{dataset_id}/trace_raptor",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/dify/retrieval",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/dify/retrieval/health",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/document/download/{attachment_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/document/download/{doc_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/document/get/{doc_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/documents/artifact/{filename}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/documents/images/{image_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/documents/{doc_id}/preview",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/documents/{document_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/file/all_parent_folder",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/file/get/{file_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/file/list",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/file/parent_folder",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/file/root_folder",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/files",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/files/{file_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/files/{file_id}/ancestors",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/files/{file_id}/parent",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/files/{file_id}/versions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/langfuse/api-key",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/language",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/mcp/servers",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/mcp/servers/{mcp_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/memories",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/memories/{memory_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/memories/{memory_id}/config",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/messages",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/messages/search",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/messages/{memory_id}:{message_id}/content",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/models/default",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/plugin/tools",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers/{provider_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers/{provider_id_or_name}/instances",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers/{provider_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/providers/{provider_id_or_name}/models/{model_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/searchbots/detail",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/searches",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/searches/{search_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/config",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/config/log",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/configs",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/healthz",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/oceanbase/status",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/ping",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/stats",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/status",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/tokens",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/system/version",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/tenant/list",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/tenants",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/tenants/{tenant_id}/users",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/thumbnails",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/user/info",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/user/logout",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/user/tenant_info",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/users/me",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/users/me/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:1}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:2}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:3}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:4}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:5}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:6}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /v1/{dynamic:7}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/components/{component_id}/input-form",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/logs/{message_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/sessions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/sessions/{session_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/versions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/versions/{version_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "GET /{canvas_id}/webhook/logs",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "HEAD /api/v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "HEAD /api/v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "HEAD /v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "HEAD /v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/chat-channels/{channel_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/chats/{chat_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/chats/{chat_id}/sessions/{session_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "PATCH /api/v1/connectors/{connector_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/datasets/{dataset_id}/documents/metadatas",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/datasets/{dataset_id}/documents/{document_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "PATCH /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "PATCH /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "PATCH /api/v1/models",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/models/default",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models/{model_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/providers/{provider_name}/instances/{instance_name}/models/{model_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/tasks/{task_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /api/v1/tenants/{tenant_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "PATCH /api/v1/users/me",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "PATCH /api/v1/users/me/models",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/chat-channels/{channel_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/chats/{chat_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/chats/{chat_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/connectors/{connector_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/datasets/{dataset_id}/documents/metadatas",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/datasets/{dataset_id}/documents/{document_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/models/default",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models/{model_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/tasks/{task_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/tenants/{tenant_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/users/me",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PATCH /v1/users/me/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agentbots/{agent_id}/completions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/agents/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/agents/rerun",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents/test_db_connection",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "python",
+    "capability": "智能体",
+    "visibility": "compatibility"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/components/{component_id}/debug",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/reset",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/upload",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/agents_openai/{agent_id}/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/audio/speech",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/audio/transcriptions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/auth/login",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "认证",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/auth/logout",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "认证",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/auth/password/forgot/captcha",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/auth/password/forgot/otp",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/auth/password/forgot/otp/verify",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/auth/password/reset",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/chat-channels",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/chat/audio/speech",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "beta"
+  },
+  {
+    "key": "POST /api/v1/chat/audio/transcription",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "beta"
+  },
+  {
+    "key": "POST /api/v1/chat/completions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/chat/mindmap",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/chat/recommendation",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/chat/to_model",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/chatbots/{dialog_id}/completions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "beta"
+  },
+  {
+    "key": "POST /api/v1/chats",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/chats/{chat_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "python",
+    "capability": "会话管理",
+    "visibility": "compatibility"
+  },
+  {
+    "key": "POST /api/v1/chats/{chat_id}/sessions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/chats_openai/{chat_id}/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/chunk/list",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/chunk/update",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/compilation_template_groups",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/connectors",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "连接器管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/connectors/box/oauth/web/result",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/connectors/box/oauth/web/start",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/connectors/google/oauth/web/result",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/connectors/google/oauth/web/start",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/connectors/{connector_id}/rebuild",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/connectors/{connector_id}/test",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/datasets",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/search",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/chunks",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/commits",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/documents",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/documents/batch-update-status",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/documents/parse",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/documents/stop",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/embedding/check",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/index",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/metadata/update",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/run_graphrag",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "python",
+    "capability": "数据集管理",
+    "visibility": "compatibility"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/run_raptor",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/datasets/{dataset_id}/search",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/dify/retrieval",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/document/delete_meta",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/document/list",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/document/metadata/summary",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/document/set_meta",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/document/upload_info",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/documents/ingest",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/documents/upload",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/embeddings",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/convert",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/create",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/mv",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/ocr",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/parse",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/rename",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/rm",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/upload",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/file/upload_info",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/files",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/files/link-to-datasets",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/files/move",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/folders/{folder_id}/commits",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文件管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/langfuse/api-key",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/llm/aimlapi/authorize/poll",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/llm/aimlapi/authorize/start",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/mcp",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "MCP 服务",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/mcp/servers",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/mcp/servers/import",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/mcp/servers/{mcp_id}/test",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/memories",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/messages",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/openai/{chat_id}/chat/completions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_id_or_name}/connection",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_id_or_name}/instances",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models/{model_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_name}/connection",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_name}/instances",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/providers/{provider_name}/instances/{instance_name}/models",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/rerank",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/retrieval",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/searchbots/ask",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/searchbots/mindmap",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/searchbots/related_questions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "beta"
+  },
+  {
+    "key": "POST /api/v1/searchbots/retrieval_test",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "beta"
+  },
+  {
+    "key": "POST /api/v1/searches",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/searches/{search_id}/completion",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/searches/{search_id}/completions",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/sessions/related_questions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/skills/config",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/skills/index",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/skills/reindex",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/skills/search",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/skills/spaces",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/system/keys",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/system/tokens",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/tasks/{task_id}/cancel",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/tenant/chunk_store",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "go",
+    "capability": "系统管理",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/tenant/dev_insert_chunks_from_file",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "go",
+    "capability": "系统管理",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/tenant/dev_insert_metadata_from_file",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "go",
+    "capability": "系统管理",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/tenant/metadata_store",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "go",
+    "capability": "系统管理",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/tenants/{tenant_id}/users",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/users",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "用户与租户管理",
+    "visibility": "public"
+  },
+  {
+    "key": "POST /api/v1/workspace/{folder_id}/commits",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /api/v1/{dynamic:0}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /auth/register/captcha",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /auth/register/otp",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /auth/register/otp/verify",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /chat/completions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /rerun",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /test_db_connection",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agentbots/{agent_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/rerun",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/test_db_connection",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/components/{component_id}/debug",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/reset",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/upload",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/agents_openai/{agent_id}/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/auth/login",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/auth/logout",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/auth/password/forgot/captcha",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/auth/password/forgot/otp",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/auth/password/forgot/otp/verify",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/auth/password/reset",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chat-channels",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chat/audio/speech",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chat/audio/transcription",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chat/mindmap",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chat/recommendation",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chatbots/{dialog_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chats",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chats/{chat_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chats/{chat_id}/sessions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/chats_openai/{chat_id}/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/compilation_template_groups",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connector/{connector_id}/rebuild",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors/box/oauth/web/result",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors/box/oauth/web/start",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors/google/oauth/web/result",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors/google/oauth/web/start",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors/{connector_id}/rebuild",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/connectors/{connector_id}/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/search",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/chunks",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/documents",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/documents/batch-update-status",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/documents/parse",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/documents/stop",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/documents/{document_id}/chunks",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/embedding/check",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/index",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/metadata/update",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/run_graphrag",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/run_raptor",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/datasets/{dataset_id}/search",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/dify/retrieval",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/document/upload_info",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/documents/ingest",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/documents/upload",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/convert",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/create",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/mv",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/rename",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/rm",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/upload",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/file/upload_info",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/files",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/files/link-to-datasets",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/files/move",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/langfuse/api-key",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/llm/aimlapi/authorize/poll",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/llm/aimlapi/authorize/start",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/mcp/servers",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/mcp/servers/import",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/mcp/servers/{mcp_id}/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/memories",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/messages",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/openai/{chat_id}/chat/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/providers/{provider_id_or_name}/connection",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/providers/{provider_id_or_name}/instances",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models/{model_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/retrieval",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searchbots/ask",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searchbots/mindmap",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searchbots/related_questions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searchbots/retrieval_test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searches",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searches/{search_id}/completion",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/searches/{search_id}/completions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/sessions/related_questions",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/system/tokens",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/tasks/{task_id}/cancel",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/tenants/{tenant_id}/users",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/user/register",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/user/set_tenant_info",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/user/setting",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/user/setting/password",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/users",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /v1/{dynamic:0}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /{canvas_id}/components/{component_id}/debug",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /{canvas_id}/publish",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /{canvas_id}/reset",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /{canvas_id}/run",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /{canvas_id}/sessions",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "POST /{canvas_id}/upload",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/agents/{agent_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 python-only",
+    "intended": "both",
+    "capability": "智能体",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/agents/{canvas_id}/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/chats/{chat_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "会话与对话",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/chats/{chat_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}/feedback",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/compilation_template_groups/{group_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/datasets/ingestion/tasks",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}/artifacts/{page_type}/{slug}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}/documents/{document_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}/documents/{document_id}/metadata/config",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}/metadata/config",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/datasets/{dataset_id}/tags",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "数据集管理",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/documents/{id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "⚠ 运行时缺口: 预期 both, 实际 go-only",
+    "intended": "both",
+    "capability": "文档与摄入",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/langfuse/api-key",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/mcp/servers/{mcp_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/memories/{memory_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/messages/{memory_id}:{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/messages/{memory_message}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/providers",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/providers/{provider_name}/instances/{instance_name}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/searches/{search_id}",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "both",
+    "capability": "分块与检索",
+    "visibility": "public"
+  },
+  {
+    "key": "PUT /api/v1/skills/spaces/{space_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/system/config/log",
+    "runtimes": [
+      "go",
+      "python"
+    ],
+    "state": "both",
+    "state_label": "双运行时支持",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /api/v1/system/variables",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/agents/{agent_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/agents/{agent_id}/webhook",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/agents/{agent_id}/webhook/test",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/agents/{canvas_id}/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/chats/{chat_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/chats/{chat_id}/sessions/{session_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}/feedback",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/compilation_template_groups/{group_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}/artifacts/{page_type}/{slug}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}/documents/{document_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}/documents/{document_id}/metadata/config",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}/metadata/config",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/datasets/{dataset_id}/tags",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/langfuse/api-key",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/mcp/servers/{mcp_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/memories/{memory_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/messages/{memory_id}:{message_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/providers",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/providers/{provider_id_or_name}/instances/{instance_id_or_name}/models",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/searches/{search_id}",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /v1/system/config/log",
+    "runtimes": [
+      "python"
+    ],
+    "state": "python-only",
+    "state_label": "python-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /{canvas_id}",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  },
+  {
+    "key": "PUT /{canvas_id}/tags",
+    "runtimes": [
+      "go"
+    ],
+    "state": "go-only",
+    "state_label": "go-only",
+    "intended": "unknown",
+    "capability": "未分类",
+    "visibility": "internal"
+  }
+]

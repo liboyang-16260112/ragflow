@@ -1,0 +1,88 @@
+---
+title: 活地图贡献指南
+sidebar_position: 0
+---
+
+# 活地图贡献指南
+
+## 概述
+
+项目活地图是连接产品能力、外部 API、运行时实现、源代码与测试验证的统一导航入口。本文档说明如何添加或更新活地图中的能力页面与黄金路径。
+
+## 添加新能力
+
+### 1. 确定能力归属
+
+能力应以用户/集成方视角划分，而非以代码目录划分。典型的能力包括：
+
+- 数据集管理
+- 文档与文件摄入
+- 分块与检索
+- 会话与对话
+- Agent 执行
+- 文件管理
+
+如果要添加的能力与已有能力高度重叠，请优先考虑扩展现有能力页面。
+
+### 2. 复制模板
+
+从 `_template_.mdx` 复制模板到 `docs/living-map/capability/` 目录下：
+
+```
+cp docs/living-map/capability/_template_.mdx docs/living-map/capability/<capability-slug>.mdx
+```
+
+### 3. 填写内容
+
+按模板中的各节说明填写：
+
+| 节 | 说明 |
+|---|------|
+| **目标与边界** | 能力定义与范围限制 |
+| **公共契约** | HTTP 路由与 SDK 接口（由生成清单驱动） |
+| **运行时流程** | 主要请求/数据流 |
+| **源代码归属** | 各运行时的源代码位置 |
+| **依赖** | 存储、索引及外部服务依赖 |
+| **验证测试** | 相关测试位置与覆盖点 |
+
+### 4. 更新导航
+
+在 `docs/living-map/capability/_category_.json` 中不需要特殊配置，Docusaurus 会自动将目录下的 `.mdx` 文件加入侧边栏。
+
+### 5. 添加 API 策略条目
+
+在 `scripts/living-map/manifest.json` 中添加该能力下所有 API 路由的策略条目（方法、路径、能力标签、可见性、稳定性、运行时等）。
+
+### 6. 运行生成与验证
+
+```bash
+# 生成清单与对等视图
+python scripts/living-map/generate.py
+
+# 验证无漂移
+python scripts/living-map/check.py
+```
+
+## 更新已有能力
+
+1. 编辑对应的 `.mdx` 文件。
+2. 如果变更涉及公共 API 契约，同步更新 `manifest.json`。
+3. 重新运行 `generate.py` 并提交生成的视图文件。
+4. 运行 `check.py` 确认验证通过。
+
+## 内容规范
+
+- 所有面向读者的叙述文字使用**简体中文**。
+- 代码标识符、文件路径、HTTP 方法、端点路径、配置键、协议名称与负载字段名保持原文。
+- 严禁在外部集成视图中展示 beta、internal 或 compatibility 路由。
+- 公共路由必须链接到详细的 HTTP 参考锚点。
+
+## 审核要点
+
+Pull Request 审核者应检查：
+
+- [ ] 能力边界是否明确
+- [ ] 公共契约是否与源代码一致
+- [ ] 运行时声明是否正确（python/go/both）
+- [ ] 外部集成路径是否不含 beta/internal/compatibility 路由
+- [ ] 所有读者向文字是否为简体中文

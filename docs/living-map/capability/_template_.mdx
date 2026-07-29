@@ -1,0 +1,61 @@
+---
+title: 能力页面模板
+sidebar_position: 1
+---
+
+# [能力名称，中文]
+
+## 目标与边界
+
+_用 2—3 句话说明该能力解决什么问题、涉及哪些实体，以及明确不属于本能力范围的内容。_
+
+## 公共契约
+
+### HTTP API
+
+| 方法 | 路径 | 可见性 | 稳定性 | 运行时 | 详细参考 |
+|------|------|--------|--------|--------|----------|
+| GET | `/api/v1/...` | public | stable | both | [参考](references/http_api_reference.md#...) |
+| POST | `/api/v1/...` | public | stable | both | [参考](references/http_api_reference.md#...) |
+
+> 以上路由清单由生成的清单驱动，不可手动增删。
+
+### Python SDK（如适用）
+
+- `ragflow_sdk.modules.xxx.yyy()` — 简述用途，链接到 [SDK 参考](references/python_api_reference.md#...)
+
+## 运行时流程
+
+_描述该能力的主要请求/数据流（文字或简单 ASCII 图均可），区分外部调用、内部服务与后台 Worker。_
+
+```
+Client → [API Server] → [Service Layer] → [Storage / Index]
+                ↓
+           [Task Queue] → [Worker]
+```
+
+## 源代码归属
+
+| 组件 | 源路径 |
+|------|--------|
+| Python API | `api/apps/restful_apis/xxx_api.py` |
+| Go API | `internal/router/xxx.go` |
+| 服务层 | `api/apps/services/xxx_service.py` |
+| SDK 模块 | `sdk/python/ragflow_sdk/modules/xxx.py` |
+
+## 依赖
+
+- **存储**: Elasticsearch / InfiniKV / MySQL（按实际填写）
+- **索引**: 依赖的索引或检索服务
+- **外部服务**: 如依赖的模型服务、对象存储等
+
+## 验证测试
+
+| 类型 | 位置 | 覆盖点 |
+|------|------|--------|
+| 单元测试 | `test_xxx.py` | ... |
+| 集成/契约测试 | `test/xxx_test.py` | ... |
+
+## 变更记录
+
+- 初始版本。

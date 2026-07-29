@@ -1,0 +1,108 @@
+---
+title: 运行时拓扑
+sidebar_position: 1
+---
+
+# RAGFlow 运行时拓扑
+
+本文档描述 RAGFlow 的运行时架构——包括可选择的 API 服务器、后台执行组件、共享后端服务，以及用于选择活动 API 运行时的配置方式。
+
+## 概览
+
+RAGFlow 的核心服务采用 **Python（Quart）** 实现，同时提供了**实验性的 Go（Gin）** API 服务器作为替代方案。两种运行时**不同时作为权威 API 服务器运行**——通过环境变量选择其中一个。
+
+```
+                        ┌───────────────────────┐
+                        │    Nginx / 反向代理     │
+                        └───────────┬───────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    │                               │
+        ┌───────────▼──────────┐      ┌────────────▼──────────┐
+        │  API Server          │      │  API Server           │
+        │  (Python / Quart)    │      │  (Go / Gin)           │
+        │  默认 :9380          │      │  API_PROXY_SCHEME=go  │
+        └───────────┬──────────┘      └────────────┬──────────┘
+                    │                               │
+                    └───────────────┬───────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        │                           │                           │
+  ┌─────▼─────┐  ┌───────────┐  ┌──▼──────┐  ┌──────────┐  ┌──▼───────┐
+  │  MySQL    │  │  Redis    │  │  ES /   │  │  MinIO   │  │  Task    │
+  │  (主数据) │  │ (会话/缓存)│  │  InfiniKV│  │ (对象存储)│  │  Executor│
+  └───────────┘  └───────────┘  └─────────┘  └──────────┘  └──────────┘
+```
+
+## API 服务器选择
+
+| 配置 | API 服务器 | 默认端口 | 状态 |
+|------|-----------|----------|------|
+| 默认启动 | Python Quart | `9380` | **稳定** |
+| `API_PROXY_SCHEME=go` | Go Gin | `9380` | **实验性** |
+
+- **默认路径**：启动 RAGFlow 时，Python API 服务器作为主进程启动，同时启动任务执行器（Task Executor）。
+- **Go 路径**：设置环境变量 `API_PROXY_SCHEME=go` 后，Go API 服务器替代 Python 服务器处理 API 请求，但 Python 任务执行器仍然运行以处理文档解析、索引等异步任务。
+
+选择指南：
+- 大多数部署应使用**默认 Python 路径**。
+- Go 路径适用于需要更高并发吞吐量的 API 层场景，但部分能力仅由 Python 运行时支持——参见 [Python/Go 对等视图](../generated/)。
+
+## 后台组件
+
+### 任务执行器（Task Executor）
+
+- 负责文档解析（PDF、DOCX、Excel、HTML 等）、分块、嵌入生成和索引构建。
+- 以独立进程运行，通过任务队列与 API 服务器通信。
+- **无论选择哪个 API 运行时，任务执行器始终是 Python 进程。**
+
+### Worker 扩展
+
+`ragflow_deps` 目录包含用于 CPU 密集型解析任务的原生扩展（如 PDF 解析器）。Worker 的规模通过环境变量和 `docker-compose` 配置控制。
+
+## 共享后端服务
+
+| 服务 | 用途 | 说明 |
+|------|------|------|
+| **MySQL** / **MariaDB** | 主业务数据存储 | 用户、知识库、文档、对话记录等 |
+| **Redis** | 会话状态 / 缓存 / 任务队列 | Quart Session 后端与异步任务队列 |
+| **Elasticsearch** / **InfiniKV** | 全文检索与向量索引 | 文档检索、分块搜索、混合检索 |
+| **MinIO** / **S3** | 对象存储 | 上传文件、文档产物与附件 |
+
+以上服务通过 `conf/service_conf.yaml` 中的连接配置接入。两个 API 运行时共享相同的后端服务。
+
+## 仓库边界
+
+```
+ragflow/
+├── api/                    # Python API 与业务逻辑
+│   ├── apps/               # Quart 应用、RESTful 路由、认证
+│   ├── db/                 # 数据模型（Peewee ORM）
+│   └── utils/              # API 工具、验证、序列化
+├── internal/               # Go API 服务器
+│   ├── router/             # Gin 路由注册
+│   ├── handler/            # 请求处理器
+│   └── common/             # Go 公共库
+├── sdk/python/             # Python SDK（ragflow_sdk）
+├── ragflow_deps/           # 原生解析扩展
+├── docs/                   # 文档站点（含本活地图）
+├── docker/                 # Docker 编排
+└── conf/                   # 服务配置
+```
+
+## 关键启动流程
+
+1. **`docker/launch_backend_service.sh`** 是统一的入口脚本，负责：
+   - 按需下载 NLTK / HuggingFace 依赖
+   - 启动 Python API 服务器（Quart）或 Go API 服务器
+   - 启动任务执行器进程
+
+2. **API 代理模式**：
+   - 当 `API_PROXY_SCHEME=go` 时，Nginx 或前端将 API 请求代理到 Go 服务器
+   - Go 服务器添加 `X-API-Source: go` 响应头用于调试
+
+## 参阅
+
+- [从源码启动 RAGFlow](../develop/launch_ragflow_from_source.md)
+- [构建 Docker 镜像](../develop/build_docker_image.mdx)
+- [Python/Go 对等视图](../generated/)

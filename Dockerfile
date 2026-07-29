@@ -238,9 +238,8 @@ COPY docs docs
 RUN --mount=type=cache,id=ragflow_npm,target=/root/.npm,sharing=locked \
     cd web && NODE_OPTIONS="--max-old-space-size=8192" VITE_BUILD_SOURCEMAP=false VITE_MINIFY=esbuild npm run build
 
-RUN --mount=type=bind,source=.git,target=/ragflow/.git \
-    version_info=$(git describe --tags --match=v* --first-parent --always) && \
-    echo "$version_info" > /ragflow/VERSION
+ARG RAGFLOW_VERSION=local
+RUN echo "$RAGFLOW_VERSION" > /ragflow/VERSION
 
 # production stage
 FROM base AS production
@@ -270,7 +269,7 @@ COPY tools/scripts tools/scripts
 
 COPY docker/service_conf.yaml.template ./conf/service_conf.yaml.template
 COPY docker/entrypoint.sh ./
-RUN chmod +x ./entrypoint*.sh
+RUN chmod +x ./entrypoint*.sh ./tools/scripts/*.sh
 
 # Copy nginx configuration for frontend serving
 COPY docker/nginx/ragflow.conf.golang docker/nginx/ragflow.conf.python docker/nginx/ragflow.conf.hybrid docker/nginx/nginx.conf docker/nginx/proxy.conf /etc/nginx/

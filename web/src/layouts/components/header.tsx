@@ -1,4 +1,3 @@
-import { IconFontFill } from '@/components/icon-font';
 import { RAGFlowAvatar } from '@/components/ragflow-avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { TenantRole } from '@/pages/user-setting/constants';
 import { Routes } from '@/routes';
 import {
+  Globe,
   LucideChevronDown,
   LucideCircleHelp,
   LucideLanguages,
@@ -80,7 +80,11 @@ export function Header({
               aria-current={pathname === Routes.Root ? 'page' : undefined}
               className="flex size-10 shrink-0 items-center justify-center"
             >
-              <img src={'/logo.svg'} alt="RAGFlow logo" className="size-10" />
+              <img
+                src="/fmoss-logo.png"
+                alt="FMoss-RAG logo"
+                className="size-10"
+              />
             </Link>
           </div>
         </div>
@@ -105,19 +109,11 @@ export function Header({
               <a
                 className="inline-flex p-2 text-text-secondary hover:text-text-primary focus-visible:text-text-primary"
                 target="_blank"
-                href="https://discord.com/invite/NjYzJD3GM3"
+                href="https://www.zqykj.com/#/home"
                 rel="noreferrer noopener"
+                aria-label="FMoss-RAG official website"
               >
-                <IconFontFill name="a-DiscordIconSVGVectorIcon" />
-              </a>
-
-              <a
-                className="inline-flex p-2 text-text-secondary hover:text-text-primary focus-visible:text-text-primary"
-                target="_blank"
-                href="https://github.com/infiniflow/ragflow"
-                rel="noreferrer noopener"
-              >
-                <IconFontFill name="GitHub" />
+                <Globe className="size-4" aria-hidden />
               </a>
             </>
           )}
@@ -204,10 +200,7 @@ export function Header({
           className="inline-flex shrink-0 items-center justify-end gap-4 text-text-badge"
         >
           <a className="inline-flex p-2">
-            <IconFontFill name="a-DiscordIconSVGVectorIcon" />
-          </a>
-          <a className="inline-flex p-2">
-            <IconFontFill name="GitHub" />
+            <Globe className="size-4" aria-hidden />
           </a>
           <Button variant="ghost" className="size-auto gap-1 px-4">
             {currentLanguage?.displayName}

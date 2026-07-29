@@ -1,0 +1,8 @@
+{
+  "label": "对接指南",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "为外部 API 集成方提供的认证、HTTP 与 Python SDK 选择、响应格式、错误处理、异步任务及流式响应的指引。"
+  }
+}

@@ -1,0 +1,86 @@
+---
+title: 智能体
+sidebar_position: 5
+---
+
+# 智能体
+
+## 目标与边界
+
+本能力涵盖 Agent 模板的创建、查询、更新、删除、会话管理及对话补全。Agent 是具有工具调用能力的高级对话实体。**不属于本能力的**：普通聊天助手（见[会话与对话](./chat-session.mdx)）。
+
+## 公共契约
+
+### HTTP API
+
+> 以下清单由生成视图自动同步，列表项请以 [公共 API 清单](../generated/) 为准。
+
+| 方法 | 路径 | 可见性 | 稳定性 | 运行时 |
+|------|------|--------|--------|--------|
+| GET | `/api/v1/agents` | public | stable | both |
+| POST | `/api/v1/agents` | public | stable | both |
+| DELETE | `/api/v1/agents` | public | stable | both |
+| GET | `/api/v1/agents/{agent_id}` | public | stable | both |
+| PUT | `/api/v1/agents/{agent_id}` | public | stable | both |
+| DELETE | `/api/v1/agents/{agent_id}` | public | stable | both |
+| GET | `/api/v1/agents/{agent_id}/sessions` | public | stable | both |
+| POST | `/api/v1/agents/{agent_id}/sessions` | public | stable | both |
+| POST | `/api/v1/agents/chat/completions` | public | stable | both |
+
+每个端点的详细请求参数与响应格式请点击对应的 [HTTP 参考](../references/http_api_reference.md) 链接。
+
+### Python SDK
+
+- `ragflow_sdk.modules.agent.Agent` — Agent 的 CRUD 与会话创建
+- 详见 [Python API 参考](../references/python_api_reference.md)
+
+## 运行时流程
+
+```
+Client                    API Server                  Agent Engine              LLM / Tools
+  │                           │                           │                      │
+  ├─ POST /agents/chat/       │                           │                      │
+  │   completions ───────────►│                           │                      │
+  │                           ├── resolve agent config ──►│                      │
+  │                           │◄── agent definition ──────┤                      │
+  │                           ├── run agent loop ────────►│                      │
+  │                           │                           ├── call LLM ─────────►│
+  │                           │                           │◄── tool_use ────────┤
+  │                           │                           ├── execute tool ────►│
+  │                           │                           │◄── tool_result ────┤
+  │                           │                           ├── call LLM ─────────►│
+  │                           │                           │◄── final answer ───┤
+  │◄── SSE/JSON response ────┤                           │                      │
+```
+
+Agent 执行遵循 ReAct（推理-行动）循环：
+1. 接收用户问题
+2. 调用 LLM 确定下一步行动（回答或调用工具）
+3. 如需调用工具，执行并获取结果后返回步骤 2
+4. 产生最终答案
+
+## 源代码归属
+
+| 组件 | 源路径 |
+|------|--------|
+| Python API | `api/apps/restful_apis/agent_api.py` |
+| Python 服务层 | `api/apps/services/agent_api_service.py` |
+| Go API | `internal/router/router.go`（`agentHandler` 相关） |
+| Go Handler | `internal/handler/agent_handler.go` |
+| SDK 模块 | `sdk/python/ragflow_sdk/modules/agent.py` |
+
+## 依赖
+
+- **存储**: MySQL（Agent 模板与会话数据）、Redis（会话状态）
+- **外部服务**: LLM 提供商（Agent 配置中指定的模型）、工具服务
+
+## 验证测试
+
+| 类型 | 位置 | 覆盖点 |
+|------|------|--------|
+| Python API 测试 | `api/apps/restful_apis/agent_api.py` | Agent CRUD、会话、补全 |
+| Go 路由测试 | `internal/router/agent_routes_test.go` | Go 端 Agent 路由注册 |
+
+## 变更记录
+
+- 初始版本。

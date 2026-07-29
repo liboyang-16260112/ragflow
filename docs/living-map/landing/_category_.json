@@ -1,0 +1,8 @@
+{
+  "label": "入口导航",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "根据你的目标选择进入路径：对接 RAGFlow API，或者理解/修改 RAGFlow 项目。"
+  }
+}
