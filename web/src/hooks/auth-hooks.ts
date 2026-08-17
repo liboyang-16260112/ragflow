@@ -1,4 +1,6 @@
 import message from '@/components/ui/message';
+import { RuntimeConfig } from '@/config/runtime';
+import { resolveProtectedRouteRedirect } from '@/config/route-auth';
 import authorizationUtil from '@/utils/authorization-util';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -47,7 +49,12 @@ export const useAuth = () => {
   const [isLogin, setIsLogin] = useState<Nullable<boolean>>(null);
 
   useEffect(() => {
-    setIsLogin(!!authorizationUtil.getAuthorization() || !!auth);
+    setIsLogin(
+      resolveProtectedRouteRedirect({
+        embeddedAuth: RuntimeConfig.embeddedAuth,
+        authorization: authorizationUtil.getAuthorization() || auth,
+      }) === null,
+    );
   }, [auth]);
 
   return { isLogin };

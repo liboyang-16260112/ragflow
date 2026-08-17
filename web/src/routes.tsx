@@ -6,8 +6,12 @@ import {
   type RouteObject,
 } from 'react-router';
 import FallbackComponent from './components/fallback-component';
+import { RuntimeConfig } from './config/runtime';
+import { resolveProtectedRouteRedirect } from './config/route-auth';
 import { IS_ENTERPRISE } from './pages/admin/utils';
-import authorizationUtil from './utils/authorization-util';
+import authorizationUtil, {
+  getAuthorization,
+} from './utils/authorization-util';
 
 export enum Routes {
   Root = '/',
@@ -110,6 +114,15 @@ const withLazyRoute = (
   return process.env.NODE_ENV === 'development' ? LazyComponent : memo(Wrapped);
 };
 
+const protectedRouteLoader = () => {
+  const loginPath = resolveProtectedRouteRedirect({
+    embeddedAuth: RuntimeConfig.embeddedAuth,
+    authorization: getAuthorization(),
+  });
+
+  return loginPath ? redirect(loginPath) : null;
+};
+
 const routeConfigOptions = [
   {
     path: '/login',
@@ -181,6 +194,7 @@ const routeConfigOptions = [
     children: [
       {
         path: Routes.Datasets,
+        loader: protectedRouteLoader,
         Component: () => import('@/pages/datasets'),
       },
       {
@@ -457,7 +471,7 @@ const wrapRoutes = (routes: LazyRouteConfig[]): RouteObject[] =>
 const routeConfig = wrapRoutes(routeConfigOptions);
 
 const routers = createBrowserRouter(routeConfig, {
-  basename: import.meta.env.VITE_BASE_URL || '/',
+  basename: RuntimeConfig.basePath,
 });
 
 export { routers };

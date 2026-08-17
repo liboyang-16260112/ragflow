@@ -4,6 +4,7 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import { createHtmlPlugin } from 'vite-plugin-html';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { parseEmbeddedConfig } from './src/config/embed-config';
 import { appName } from './src/conf.json';
 
 // Inject code location data attributes for react-dev-inspector
@@ -41,6 +42,7 @@ function resolveMinify(value: string | undefined): MinifyValue {
 export default defineConfig(({ mode }) => {
   // Load env from .env file (also loads .env.local, .env.[mode], .env.[mode].local)
   const env = loadEnv(mode, process.cwd(), '');
+  const embeddedConfig = parseEmbeddedConfig(env);
 
   // Try to load from .env file explicitly if API_PROXY_SCHEME not found
   let proxyScheme = env.API_PROXY_SCHEME;
@@ -205,7 +207,7 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     assetsInclude: ['**/*.md'],
-    base: env.VITE_BASE_URL,
+    base: embeddedConfig.basePath,
     publicDir: 'public',
     cacheDir: './node_modules/.vite-cache',
     optimizeDeps: {

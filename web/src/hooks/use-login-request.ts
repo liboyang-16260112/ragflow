@@ -75,10 +75,10 @@ export const useLogin = () => {
           name: data.nickname,
           email: data.email,
         };
-        authorizationUtil.setItems({
-          Authorization: authorization,
-          userInfo: JSON.stringify(userInfo),
-          Token: token,
+        authorizationUtil.setCredentials({
+          authorization: authorization ?? '',
+          token,
+          userInfo,
         });
       }
       return res.code;

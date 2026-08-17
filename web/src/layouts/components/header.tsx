@@ -1,4 +1,5 @@
 import { RAGFlowAvatar } from '@/components/ragflow-avatar';
+import { publicAssetUrl } from '@/config/runtime';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -81,7 +82,7 @@ export function Header({
               className="flex size-10 shrink-0 items-center justify-center"
             >
               <img
-                src="/fmoss-logo.png"
+                src={publicAssetUrl('/fmoss-logo.png')}
                 alt="FMoss-RAG logo"
                 className="size-10"
               />

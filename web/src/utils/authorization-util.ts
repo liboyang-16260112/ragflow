@@ -1,65 +1,135 @@
-import { Authorization, Token, UserInfo } from '@/constants/authorization';
+import { RagflowStorageKey } from '@/constants/authorization';
+import { RuntimeConfig } from '@/config/runtime';
 import { getSearchValue } from './common-util';
-const KeySet = [Authorization, Token, UserInfo];
 
-const storage = {
+const KeySet = Object.values(RagflowStorageKey);
+
+type CredentialSet = {
+  authorization: string;
+  token: string;
+  userInfo: string | Record<string, unknown>;
+};
+
+export const createAuthorizationStorage = (
+  browserStorage: Storage,
+  persistCredentials = true,
+) => ({
   getAuthorization: () => {
-    return localStorage.getItem(Authorization);
+    return browserStorage.getItem(RagflowStorageKey.Authorization);
   },
   getToken: () => {
-    return localStorage.getItem(Token);
+    return browserStorage.getItem(RagflowStorageKey.Token);
   },
   getUserInfo: () => {
-    return localStorage.getItem(UserInfo);
+    return browserStorage.getItem(RagflowStorageKey.UserInfo);
   },
   getUserInfoObject: () => {
-    const userInfoStr = localStorage.getItem(UserInfo);
+    const userInfoStr = browserStorage.getItem(RagflowStorageKey.UserInfo);
     return userInfoStr ? JSON.parse(userInfoStr) : null;
   },
   setAuthorization: (value: string) => {
-    localStorage.setItem(Authorization, value);
+    if (persistCredentials) {
+      browserStorage.setItem(RagflowStorageKey.Authorization, value);
+    }
   },
   setToken: (value: string) => {
-    localStorage.setItem(Token, value);
+    if (persistCredentials) {
+      browserStorage.setItem(RagflowStorageKey.Token, value);
+    }
   },
   setUserInfo: (value: string | Record<string, unknown>) => {
+    if (!persistCredentials) {
+      return;
+    }
     const valueStr = typeof value !== 'string' ? JSON.stringify(value) : value;
-    localStorage.setItem(UserInfo, valueStr);
+    browserStorage.setItem(RagflowStorageKey.UserInfo, valueStr);
   },
-  setItems: (pairs: Record<string, string>) => {
-    Object.entries(pairs).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
+  setCredentials: ({ authorization, token, userInfo }: CredentialSet) => {
+    if (!persistCredentials) {
+      return;
+    }
+    const userInfoValue =
+      typeof userInfo === 'string' ? userInfo : JSON.stringify(userInfo);
+    browserStorage.setItem(RagflowStorageKey.Authorization, authorization);
+    browserStorage.setItem(RagflowStorageKey.Token, token);
+    browserStorage.setItem(RagflowStorageKey.UserInfo, userInfoValue);
   },
   removeAuthorization: () => {
-    localStorage.removeItem(Authorization);
+    browserStorage.removeItem(RagflowStorageKey.Authorization);
   },
   removeAll: () => {
     KeySet.forEach((x) => {
-      localStorage.removeItem(x);
+      browserStorage.removeItem(x);
     });
   },
   setLanguage: (lng: string) => {
-    localStorage.setItem('lng', lng);
+    browserStorage.setItem('lng', lng);
   },
   getLanguage: (): string => {
-    return localStorage.getItem('lng') as string;
+    return browserStorage.getItem('lng') as string;
   },
+});
+
+const storage = createAuthorizationStorage(
+  localStorage,
+  !RuntimeConfig.embeddedAuth,
+);
+
+type AuthorizationSource = {
+  embeddedAuth: boolean;
+  searchAuthorization: string | null | undefined;
+  storedAuthorization: string | null | undefined;
+};
+
+export const resolveAuthorization = ({
+  embeddedAuth,
+  searchAuthorization,
+  storedAuthorization,
+}: AuthorizationSource): string => {
+  if (embeddedAuth) {
+    return 'Bearer ragflow-embedded-proxy';
+  }
+
+  return searchAuthorization
+    ? `Bearer ${searchAuthorization}`
+    : storedAuthorization || '';
 };
 
 export const getAuthorization = () => {
-  const auth = getSearchValue('auth');
-  const authorization = auth
-    ? 'Bearer ' + auth
-    : storage.getAuthorization() || '';
-
-  return authorization;
+  return resolveAuthorization({
+    embeddedAuth: RuntimeConfig.embeddedAuth,
+    searchAuthorization: getSearchValue('auth'),
+    storedAuthorization: storage.getAuthorization(),
+  });
 };
 
 export default storage;
 
-// Will not jump to the login page
+type LoginRedirectSource = {
+  embeddedAuth: boolean;
+  basePath: string;
+  origin: string;
+};
+
+export const resolveLoginRedirect = ({
+  embeddedAuth,
+  basePath,
+  origin,
+}: LoginRedirectSource): string | null => {
+  if (embeddedAuth) {
+    return null;
+  }
+
+  return new URL(`${basePath}login`, `${origin}/`).toString();
+};
+
 export function redirectToLogin() {
-  // const env = import.meta.env;
-  window.location.href = location.origin + `/login`;
+  const loginUrl = resolveLoginRedirect({
+    embeddedAuth: RuntimeConfig.embeddedAuth,
+    basePath: RuntimeConfig.basePath,
+    origin: location.origin,
+  });
+  if (loginUrl) {
+    window.location.href = loginUrl;
+  }
 }
