@@ -61,6 +61,30 @@ describe('RAGFlow credential storage', () => {
     expect(localStorage.getItem('userInfo')).toBe('{"name":"QKQ user"}');
   });
 
+  it('stores thinking preference in the RAGFlow namespace even in embedded mode', () => {
+    const storage = createAuthorizationStorage(localStorage, false);
+
+    storage.setThinkingLevel('2');
+
+    expect(storage.getThinkingLevel()).toBe('2');
+    expect(localStorage.getItem(RagflowStorageKey.ThinkingLevel)).toBe('2');
+    expect(localStorage.getItem('thinkingLevel')).toBeNull();
+  });
+
+  it('keeps the thinking preference when credentials are removed', () => {
+    const storage = createAuthorizationStorage(localStorage);
+    storage.setThinkingLevel('3');
+    storage.setCredentials({
+      authorization: 'ragflow-authorization',
+      token: 'ragflow-token',
+      userInfo: { name: 'RAGFlow user' },
+    });
+
+    storage.removeAll();
+
+    expect(storage.getThinkingLevel()).toBe('3');
+  });
+
   it('does not persist credentials in embedded mode', () => {
     const storage = createAuthorizationStorage(localStorage, false);
 

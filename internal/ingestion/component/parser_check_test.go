@@ -24,8 +24,7 @@ import (
 )
 
 // TestParserComponent_Check covers the construction-time business
-// validation that mirrors the applicable subset of Python
-// ParserParam.check() (rag/flow/parser/parser.py:251-321).
+// validation for parser methods that require language configuration.
 //
 // Go does NOT validate audio/video vlm.llm_id because media_dispatch
 // resolves tenant default models via resolveTenantModelByType, not
@@ -40,12 +39,12 @@ func TestParserComponent_Check(t *testing.T) {
 		{
 			name:    "pdf: parse_method empty → error",
 			setups:  map[string]schema.ParserSetup{"pdf": {"parse_method": ""}},
-			wantErr: "Parse method abnormal",
+			wantErr: "parse method abnormal",
 		},
 		{
 			name:    "pdf: parse_method missing → error",
 			setups:  map[string]schema.ParserSetup{"pdf": {}},
-			wantErr: "Parse method abnormal",
+			wantErr: "parse method abnormal",
 		},
 		{
 			name:   "pdf: deepdoc (whitelist) without lang → pass",
@@ -72,6 +71,10 @@ func TestParserComponent_Check(t *testing.T) {
 			name:   "pdf: paddleocr (whitelist) without lang → pass",
 			setups: map[string]schema.ParserSetup{"pdf": {"parse_method": "paddleocr"}},
 		},
+		{
+			name:   "pdf: monkeyocrv2 (whitelist) without lang → pass",
+			setups: map[string]schema.ParserSetup{"pdf": {"parse_method": "monkeyocrv2"}},
+		},
 
 		// --- image family (parser.py:283-287) ---
 		{
@@ -85,7 +88,7 @@ func TestParserComponent_Check(t *testing.T) {
 		{
 			name:    "image: non-ocr without lang → error",
 			setups:  map[string]schema.ParserSetup{"image": {"parse_method": "vlm_xyz", "lang": ""}},
-			wantErr: "Image VLM language",
+			wantErr: "image VLM language",
 		},
 		{
 			name:   "image: non-ocr with lang → pass",
@@ -127,7 +130,7 @@ func TestParserComponent_Check(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := &ParserComponent{Setups: tc.setups, Param: schema.ParserParam{}.Defaults()}
+			c := &ParserComponent{setups: tc.setups}
 			err := c.Check()
 			if tc.wantErr != "" {
 				if err == nil {
@@ -165,8 +168,8 @@ func TestParserComponent_New_RunsCheck(t *testing.T) {
 	if err == nil {
 		t.Fatal("NewParserComponent with empty pdf.parse_method: want error, got nil")
 	}
-	if !strings.Contains(err.Error(), "Parse method abnormal") {
-		t.Errorf("error = %q, want substring %q", err.Error(), "Parse method abnormal")
+	if !strings.Contains(err.Error(), "parse method abnormal") {
+		t.Errorf("error = %q, want substring %q", err.Error(), "parse method abnormal")
 	}
 	if c != nil {
 		t.Errorf("want nil component on error, got %T", c)

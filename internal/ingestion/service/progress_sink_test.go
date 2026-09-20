@@ -23,7 +23,6 @@ import (
 	"testing"
 
 	"ragflow/internal/dao"
-	"ragflow/internal/entity"
 	"ragflow/internal/ingestion/pipeline"
 	"ragflow/internal/ingestion/testutil"
 	servicepkg "ragflow/internal/service"
@@ -58,7 +57,7 @@ func TestProgressSink_EagerlyConstructsDocumentService(t *testing.T) {
 	defer cleanup()
 
 	ctx := t.Context()
-	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService())
+	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService(), "run-1")
 	if sink.docSvc == nil {
 		t.Fatal("expected sink to eagerly construct its DocumentService, got nil (lazy)")
 	}
@@ -82,7 +81,7 @@ func TestProgressSink_DocService_NoDataRace(t *testing.T) {
 	// Deliberately do NOT inject a stub docSvc: the sink's own DocumentService
 	// must already be constructed (not lazily built mid-call) when the
 	// goroutines below race into docSvc.
-	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService())
+	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService(), "run-1")
 
 	const n = 30
 	var wg sync.WaitGroup
@@ -112,7 +111,7 @@ func TestProgressSink_Total_NoDataRace(t *testing.T) {
 	_, _, _, taskID := testutil.SeedTestData(t, db, testutil.WithPipelineID("flow-1"))
 
 	ctx := t.Context()
-	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService())
+	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService(), "run-1")
 
 	const n = 30
 	var wg sync.WaitGroup
@@ -139,19 +138,15 @@ func TestProgressSink_Total_NoDataRace(t *testing.T) {
 }
 
 type stubDocProgressSvc struct {
-	gotDocID    string
-	gotProgress float64
-	gotRun      string
-	gotMsg      string
-	calls       int
+	stateCalls    int
+	stateDocID    string
+	stateProgress float64
 }
 
-func (s *stubDocProgressSvc) UpdateRunProgress(ctx context.Context, docID string, progress float64, run, progressMsg string) error {
-	s.calls++
-	s.gotDocID = docID
-	s.gotProgress = progress
-	s.gotRun = run
-	s.gotMsg = progressMsg
+func (s *stubDocProgressSvc) UpdateRunState(_ context.Context, docID string, progress float64) error {
+	s.stateCalls++
+	s.stateDocID = docID
+	s.stateProgress = progress
 	return nil
 }
 
@@ -165,7 +160,7 @@ func TestProgressSinkPersistsViaService(t *testing.T) {
 	_, _, docID, taskID := testutil.SeedTestData(t, db, testutil.WithPipelineID("flow-1"))
 
 	ctx := t.Context()
-	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService())
+	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService(), "run-1")
 	stub := &stubDocProgressSvc{}
 	sink.docSvc = stub
 
@@ -186,7 +181,7 @@ func TestProgressSinkPersistsViaService(t *testing.T) {
 		Message:    "Parser Done",
 	})
 
-	logs, err := dao.NewIngestionTaskLogDAO().ListLogsByTaskID(ctx, db, taskID)
+	logs, err := dao.NewIngestionTaskLogDAO().ListLogsByPipelineLogID(ctx, db, "run-1")
 	if err != nil {
 		t.Fatalf("list logs: %v", err)
 	}
@@ -197,21 +192,40 @@ func TestProgressSinkPersistsViaService(t *testing.T) {
 		t.Fatalf("unexpected log row: %+v", logs[0])
 	}
 
-	// 1 of 2 components done -> RUNNING (run "1"), progress 0.5.
-	if stub.calls != 1 {
-		t.Fatalf("UpdateRunProgress calls = %d, want 1", stub.calls)
+	// 1 of 2 components done -> RUNNING (run "1"), progress 0.5. The
+	// event stream owns text, so this must not write document.progress_msg.
+	if stub.stateCalls != 1 || stub.stateDocID != docID || stub.stateProgress != 0.5 {
+		t.Fatalf("UpdateRunState = calls:%d doc:%q progress:%v, want 1/%q/0.5", stub.stateCalls, stub.stateDocID, stub.stateProgress, docID)
 	}
-	if stub.gotDocID != docID {
-		t.Fatalf("docID = %q, want %q", stub.gotDocID, docID)
+}
+
+func TestProgressSinkWritesLifecycleEventForCapturedRun(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	cleanup := testutil.ReplaceDBForTest(t, db)
+	defer cleanup()
+	_, _, _, taskID := testutil.SeedTestData(t, db, testutil.WithPipelineID("flow-1"))
+
+	sink := newProgressSink(t.Context(), servicepkg.NewIngestionTaskService(), "run-1")
+	sink.OnComponentProgress(t.Context(), pipeline.ProgressEvent{
+		TaskID:    taskID,
+		Component: "Parser",
+		Phase:     1,
+		Message:   "Parser Done",
+	})
+
+	logs, err := dao.NewIngestionTaskLogDAO().ListLogsByPipelineLogID(t.Context(), db, "run-1")
+	if err != nil {
+		t.Fatalf("list events: %v", err)
 	}
-	if stub.gotProgress != 0.5 {
-		t.Fatalf("progress = %v, want 0.5", stub.gotProgress)
+	if len(logs) != 1 {
+		t.Fatalf("event count = %d, want 1", len(logs))
 	}
-	if stub.gotRun != "1" {
-		t.Fatalf("run = %q, want 1 (RUNNING)", stub.gotRun)
+	event := logs[0]
+	if event.PipelineLogID == nil || *event.PipelineLogID != "run-1" {
+		t.Fatalf("pipeline_log_id = %v, want run-1", event.PipelineLogID)
 	}
-	if stub.gotMsg != "Parser Done" {
-		t.Fatalf("progress_msg = %q, want Parser Done", stub.gotMsg)
+	if event.EventType != dao.EventTypeLifecycle || event.Component != "Parser" || event.Phase != 1 {
+		t.Fatalf("event = %+v, want lifecycle Parser/1", event)
 	}
 }
 
@@ -224,7 +238,7 @@ func TestProgressSinkEmptyDocumentIDSkipsMirror(t *testing.T) {
 	_, _, _, taskID := testutil.SeedTestData(t, db, testutil.WithPipelineID("flow-1"))
 
 	ctx := t.Context()
-	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService())
+	sink := newProgressSink(ctx, servicepkg.NewIngestionTaskService(), "run-1")
 	stub := &stubDocProgressSvc{}
 	sink.docSvc = stub
 
@@ -235,15 +249,15 @@ func TestProgressSinkEmptyDocumentIDSkipsMirror(t *testing.T) {
 		Message:   "Chunker Done",
 	})
 
-	logs, err := dao.NewIngestionTaskLogDAO().ListLogsByTaskID(ctx, db, taskID)
+	logs, err := dao.NewIngestionTaskLogDAO().ListLogsByPipelineLogID(ctx, db, "run-1")
 	if err != nil {
 		t.Fatalf("list logs: %v", err)
 	}
 	if len(logs) != 1 {
 		t.Fatalf("expected 1 component-progress row, got %d", len(logs))
 	}
-	if stub.calls != 0 {
-		t.Fatalf("UpdateRunProgress calls = %d, want 0 (no document bound)", stub.calls)
+	if stub.stateCalls != 0 {
+		t.Fatalf("UpdateRunState calls = %d, want 0 (no document bound)", stub.stateCalls)
 	}
 }
 
@@ -255,68 +269,57 @@ func TestDeriveDocumentProgress(t *testing.T) {
 		name     string
 		agg      *dao.TaskProgress
 		total    int
-		wantRun  string
 		wantProg float64
 	}{
 		{
-			name:     "failed component → fail",
+			name:     "failed component progress",
 			agg:      &dao.TaskProgress{Failed: 1, Done: 0, Running: 0, Percent: 0},
 			total:    5,
-			wantRun:  string(entity.TaskStatusFail),
 			wantProg: 0.0,
 		},
 		{
-			name:     "all done → done",
+			name:     "all done",
 			agg:      &dao.TaskProgress{Failed: 0, Done: 5, Running: 0, Percent: 100},
 			total:    5,
-			wantRun:  string(entity.TaskStatusDone),
 			wantProg: 1.0,
 		},
 		{
-			name:     "partial done → running",
+			name:     "partial done",
 			agg:      &dao.TaskProgress{Failed: 0, Done: 3, Running: 0, Percent: 60},
 			total:    5,
-			wantRun:  string(entity.TaskStatusRunning),
 			wantProg: 0.6,
 		},
 		{
-			name:     "running only → running",
+			name:     "running only",
 			agg:      &dao.TaskProgress{Failed: 0, Done: 0, Running: 2, Percent: 0},
 			total:    5,
-			wantRun:  string(entity.TaskStatusRunning),
 			wantProg: 0.0,
 		},
 		{
-			name:     "nothing started → unstart",
+			name:     "nothing started",
 			agg:      &dao.TaskProgress{Failed: 0, Done: 0, Running: 0, Percent: 0},
 			total:    5,
-			wantRun:  string(entity.TaskStatusUnstart),
 			wantProg: 0.0,
 		},
 		{
-			name:     "total zero, nothing done → done (0==0)",
+			name:     "total zero, nothing done",
 			agg:      &dao.TaskProgress{Failed: 0, Done: 0, Running: 0, Percent: 0},
 			total:    0,
-			wantRun:  string(entity.TaskStatusDone),
 			wantProg: 0.0,
 		},
 		{
-			name:     "failed overrides done=total",
+			name:     "failed with 100 percent",
 			agg:      &dao.TaskProgress{Failed: 1, Done: 5, Running: 0, Percent: 100},
 			total:    5,
-			wantRun:  string(entity.TaskStatusFail),
 			wantProg: 1.0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			prog, run := deriveDocumentProgress(tt.agg, tt.total)
+			prog := deriveDocumentProgress(tt.agg, tt.total)
 			if prog != tt.wantProg {
 				t.Errorf("progress = %v, want %v", prog, tt.wantProg)
-			}
-			if run != tt.wantRun {
-				t.Errorf("run = %q, want %q", run, tt.wantRun)
 			}
 		})
 	}

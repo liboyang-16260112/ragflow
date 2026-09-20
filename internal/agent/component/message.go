@@ -21,7 +21,7 @@
 // and (optionally) emits the result as a single SSE chunk.
 //
 // Capabilities:
-//   - output_format rendering (html / markdown / plain) via render.go
+//   - output_format rendering (html / Markdown / plain) via render.go
 //   - auto_play → TTS engine dispatch via internal/agent/audio
 //   - download extraction from inputs (the {doc_id, filename,
 //     mime_type} walk from Python's _extract_downloads)
@@ -38,6 +38,8 @@ import (
 	"ragflow/internal/agent/audio"
 	"ragflow/internal/agent/runtime"
 	"ragflow/internal/common"
+
+	"gorm.io/gorm"
 )
 
 const componentNameMessage = "Message"
@@ -169,7 +171,7 @@ func (m *MessageComponent) Name() string { return m.name }
 // inputs["text"] takes precedence over the per-instance text so the
 // same node can be reused with different templates at run time when
 // the orchestrator wants to override the DSL-declared value.
-func (m *MessageComponent) Invoke(ctx context.Context, inputs map[string]any) (map[string]any, error) {
+func (m *MessageComponent) Invoke(ctx context.Context, db *gorm.DB, inputs map[string]any) (map[string]any, error) {
 	state, _, err := runtime.GetStateFromContext[*runtime.CanvasState](ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Message: %w", err)
@@ -239,6 +241,22 @@ func (m *MessageComponent) Invoke(ctx context.Context, inputs map[string]any) (m
 	out := map[string]any{
 		"content":   rendered,
 		"downloads": downloads,
+	}
+
+	// File export (the "Download file type" selector). Python's
+	// _convert_content receives the resolved, un-rendered content and
+	// converts it via pypandoc/pandas; each format writer owns its own
+	// markdown handling. Exporting the format-rendered string instead
+	// would double-process the body (html export would ship the escaped
+	// text as literal content). Failures are logged, never fatal —
+	// mirroring Python's try/except around the conversion.
+	if exportFmt := messageExportFormat(string(format)); exportFmt != "" && resolved != "" {
+		attachment, exportErr := exportMessageAttachment(ctx, exportFmt, resolved)
+		if exportErr != nil {
+			common.Error("Message: export attachment failed", exportErr)
+		} else if attachment != nil {
+			out["attachment"] = attachment
+		}
 	}
 
 	// auto_play TTS dispatch. The audio bytes are returned under
@@ -314,8 +332,8 @@ func (m *MessageComponent) Invoke(ctx context.Context, inputs map[string]any) (m
 		saveErr := saver.Save(ctx, MemorySaveRequest{
 			MemoryIDs:     memIDs,
 			UserID:        userID,
-			AgentID:       state.TaskID,
-			SessionID:     state.RunID,
+			AgentID:       memoryAgentID(state),
+			SessionID:     memorySessionID(state),
 			UserInput:     stringFromStateSys(state, "query"),
 			AgentResponse: rendered,
 		})
@@ -328,6 +346,29 @@ func (m *MessageComponent) Invoke(ctx context.Context, inputs map[string]any) (m
 	return out, nil
 }
 
+func memoryAgentID(state *runtime.CanvasState) string {
+	if agentID := stringFromStateSys(state, "agent_id"); agentID != "" {
+		return agentID
+	}
+	if canvasID := stringFromStateSys(state, "canvas_id"); canvasID != "" {
+		return canvasID
+	}
+	if state == nil {
+		return ""
+	}
+	return state.SessionID
+}
+
+func memorySessionID(state *runtime.CanvasState) string {
+	if sessionID := stringFromStateSys(state, "session_id"); sessionID != "" {
+		return sessionID
+	}
+	if state == nil {
+		return ""
+	}
+	return state.RunID
+}
+
 // resolveDeferredTemplate resolves a Message template while consuming any
 // lazy Agent stream it references. It returns the complete visible text and a
 // flag indicating whether a DeferredStream was opened.
@@ -335,6 +376,9 @@ func (m *MessageComponent) resolveDeferredTemplate(ctx context.Context, text str
 	matches := runtime.VarRefPattern.FindAllStringSubmatchIndex(text, -1)
 	if len(matches) == 0 {
 		return text, false, nil
+	}
+	if _, err := runtime.ResolveTemplate(text, state); err != nil {
+		return "", false, err
 	}
 	// Ordinary Message templates are rendered and emitted once by Invoke.
 	// Only templates that actually reference a DeferredStream belong to the
@@ -399,7 +443,10 @@ func (m *MessageComponent) resolveDeferredTemplate(ctx context.Context, text str
 			runtime.EmitCanvasMessageEvent(ctx, "", false, true)
 		}
 		if err != nil {
-			return "", true, fmt.Errorf("Message: consume deferred Agent stream: %w", err)
+			return "", true, &runtime.DeferredStreamError{Err: err}
+		}
+		if resultErr, _ := result["_ERROR"].(string); strings.TrimSpace(resultErr) != "" {
+			return "", true, &runtime.DeferredStreamError{Text: resultErr}
 		}
 		finalText := visible.String()
 		if result != nil {
@@ -506,11 +553,11 @@ func stringFromStateSys(state *runtime.CanvasState, key string) string {
 // Stream resolves the message and emits the content chunk. The outer
 // Agent SSE handler owns the final [DONE] frame, matching Python's
 // agent_api.py rather than leaking a component-local done marker.
-func (m *MessageComponent) Stream(ctx context.Context, inputs map[string]any) (<-chan map[string]any, error) {
+func (m *MessageComponent) Stream(ctx context.Context, db *gorm.DB, inputs map[string]any) (<-chan map[string]any, error) {
 	ch := make(chan map[string]any, 16)
 	go func() {
 		defer close(ch)
-		result, err := m.Invoke(ctx, inputs)
+		result, err := m.Invoke(ctx, db, inputs)
 		if err != nil {
 			select {
 			case ch <- map[string]any{"error": err.Error()}:
@@ -536,7 +583,7 @@ func (m *MessageComponent) Inputs() map[string]string {
 		"stream":        "When true, the resolved content is delivered as an SSE stream.",
 		"memory_save":   "When true, persist the message via the registered MemorySaver (default stub returns ErrMemoryServiceMissing).",
 		"memory_ids":    "List of memory-store IDs to persist into (used when memory_save=true).",
-		"output_format": "'html' | 'markdown' | 'plain'. Default 'plain' when unset.",
+		"output_format": "'html' | 'markdown' | 'plain' rendering; file formats (markdown/md, html, docx, xlsx, pdf) additionally export the content as a downloadable attachment.",
 		"auto_play":     "When truthy, dispatch the resolved text through the audio.Synthesizer.",
 		"voice":         "TTS voice hint (engine-specific).",
 		"lang":          "TTS language tag (BCP-47, e.g. 'en' or 'zh-CN').",
@@ -548,6 +595,7 @@ func (m *MessageComponent) Outputs() map[string]string {
 	return map[string]string{
 		"content":      "Resolved and rendered message body.",
 		"downloads":    "Extracted download descriptors ({doc_id, filename, mime_type, url}).",
+		"attachment":   "{doc_id, format, file_name} descriptor for the exported file when output_format selects a file format.",
 		"audio":        "{media_type, data_b64} envelope populated when auto_play is wired and a TTS engine succeeds.",
 		"audio_error":  "Surfaced when TTS dispatch fails; the textual content is still returned.",
 		"memory_error": "Surfaced when memory persistence fails; the textual content is still returned.",

@@ -19,9 +19,11 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"ragflow/internal/common"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -67,13 +69,52 @@ func (h *ChatSessionHandler) ListChatSessions(c *gin.Context) {
 		return
 	}
 
+	// Mirror Python's list_sessions query handling: invalid/negative page
+	// values fall back to the default; page_size 0 yields an empty list and a
+	// negative page_size disables pagination.
+	page := 1
+	if pageStr := c.Query("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	pageSize := 30
+	if pageSizeStr := c.Query("page_size"); pageSizeStr != "" {
+		if ps, err := strconv.Atoi(pageSizeStr); err == nil {
+			pageSize = ps
+		}
+	}
+
+	// `sort` supersedes the older pair, so a request it can order is not rejected
+	// for the spelling of an `orderby` that will not be read.
+	sortTerms := sortTermsFromQuery(c)
+	orderby := "create_time"
+	if queryOrderby := c.Query("orderby"); queryOrderby != "" {
+		switch queryOrderby {
+		case "create_time", "update_time", "name":
+			orderby = queryOrderby
+		default:
+			if len(sortTerms) == 0 {
+				common.ResponseWithCodeData(c, common.CodeArgumentError, nil, fmt.Sprintf("invalid orderby field: %s", queryOrderby))
+				return
+			}
+		}
+	}
+
+	desc := true
+	if descStr := c.Query("desc"); descStr != "" {
+		desc = !strings.EqualFold(descStr, "false")
+	}
+	terms := orderTerms(sortTerms, orderby, desc)
+
 	// Call service to list chat sessions
 	ctx := c.Request.Context()
-	result, err := h.chatSessionService.ListChatSessions(ctx, userID, chatID)
+	includeHistory := c.DefaultQuery("include_history", "true")
+	result, err := h.chatSessionService.ListChatSessions(ctx, userID, chatID, c.Query("id"), c.Query("name"), terms, page, pageSize, includeHistory != "false" && includeHistory != "False")
 	if err != nil {
-		// Check if it's an authorization error
-		if err.Error() == "Only owner of dialog authorized for this operation" {
-			common.ResponseWithHttpCodeData(c, http.StatusForbidden, 403, false, err.Error())
+		// Mirror Python: ownership failures return code 109 "no authorization"
+		if strings.Contains(err.Error(), "no authorization") {
+			common.ResponseWithCodeData(c, common.CodeAuthenticationError, false, "no authorization")
 			return
 		}
 		common.ResponseWithHttpCodeData(c, http.StatusInternalServerError, 500, nil, err.Error())
@@ -84,28 +125,31 @@ func (h *ChatSessionHandler) ListChatSessions(c *gin.Context) {
 }
 
 type ChatCompletionsRequest struct {
-	ChatID                 string                   `json:"chat_id,omitempty"`
-	SessionID              string                   `json:"session_id,omitempty"`
-	ConversationID         string                   `json:"conversation_id,omitempty"`
-	Messages               []map[string]interface{} `json:"messages,omitempty"`
-	Question               string                   `json:"question,omitempty"`
-	Files                  []interface{}            `json:"files,omitempty"`
-	LLMID                  string                   `json:"llm_id,omitempty"`
-	PassAllHistoryMessages *bool                    `json:"pass_all_history_messages,omitempty"`
-	PassAllHistory         *bool                    `json:"pass_all_history,omitempty"`
-	Legacy                 bool                     `json:"legacy,omitempty"`
-	Stream                 *bool                    `json:"stream"`
-	Temperature            *float64                 `json:"temperature,omitempty"`
-	TopP                   *float64                 `json:"top_p,omitempty"`
-	FrequencyPenalty       *float64                 `json:"frequency_penalty,omitempty"`
-	PresencePenalty        *float64                 `json:"presence_penalty,omitempty"`
-	MaxTokens              *int                     `json:"max_tokens,omitempty"`
+	ChatID           string                   `json:"chat_id,omitempty"`
+	SessionID        string                   `json:"session_id,omitempty"`
+	ConversationID   string                   `json:"conversation_id,omitempty"`
+	Messages         []map[string]interface{} `json:"messages,omitempty"`
+	Question         string                   `json:"question,omitempty"`
+	Query            string                   `json:"query,omitempty"`
+	Files            []interface{}            `json:"files,omitempty"`
+	LLMID            string                   `json:"llm_id,omitempty"`
+	Legacy           bool                     `json:"legacy,omitempty"`
+	Stream           *bool                    `json:"stream"`
+	Thinking         string                   `json:"thinking"`
+	Temperature      *float64                 `json:"temperature,omitempty"`
+	TopP             *float64                 `json:"top_p,omitempty"`
+	FrequencyPenalty *float64                 `json:"frequency_penalty,omitempty"`
+	PresencePenalty  *float64                 `json:"presence_penalty,omitempty"`
+	MaxTokens        *int                     `json:"max_tokens,omitempty"`
+
+	StoreHistoryMessages *bool `json:"store_history_messages,omitempty"`
 }
 
 // ChatCompletions chat completion
 // @Summary Chat Completion
 // @Description Send messages to the chat model and get a response.
 // @Description Default is streaming (text/event-stream); set stream:false for JSON.
+// @Description Set store_history_messages:false to use the full messages payload without storing history. No other explicit value is supported.
 // @Tags chat_session
 // @Accept json
 // @Produce json, text/event-stream
@@ -126,6 +170,10 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 		common.ErrorWithCode(c, common.CodeBadRequest, err.Error())
 		return
 	}
+	if _, err := service.ResolveStoreHistoryMessages(rawBody); err != nil {
+		common.ErrorWithCode(c, common.CodeBadRequest, err.Error())
+		return
+	}
 
 	var req ChatCompletionsRequest
 	b, err := json.Marshal(rawBody)
@@ -138,6 +186,10 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 		return
 	}
 
+	if req.Question == "" {
+		req.Question = req.Query
+	}
+
 	// Normalize session_id / conversation_id
 	sessionID := req.SessionID
 	if sessionID == "" {
@@ -146,6 +198,15 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 
 	// Build generation config
 	genConfig := make(map[string]interface{})
+	if req.Thinking != "" {
+		switch req.Thinking {
+		case "enabled":
+			genConfig["thinking"] = true
+		case "disabled":
+			genConfig["thinking"] = false
+		case "", "default":
+		}
+	}
 	if req.Temperature != nil {
 		genConfig["temperature"] = *req.Temperature
 	}
@@ -159,25 +220,19 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 		genConfig["presence_penalty"] = *req.PresencePenalty
 	}
 	if req.MaxTokens != nil {
+		if *req.MaxTokens <= 0 {
+			common.ErrorWithCode(c, common.CodeBadRequest, "`max_tokens` must be greater than 0.")
+			return
+		}
 		genConfig["max_tokens"] = *req.MaxTokens
-	}
-
-	// Resolve pass_all_history from either alias
-	passAllHistory := false
-	if req.PassAllHistory != nil {
-		passAllHistory = *req.PassAllHistory
-	}
-	if req.PassAllHistoryMessages != nil {
-		passAllHistory = *req.PassAllHistoryMessages
 	}
 
 	// Remove known keys from rawBody; what remains is passthrough kwargs
 	knownKeys := []string{
 		"chat_id", "session_id", "conversation_id",
-		"messages", "question", "files",
+		"messages", "question", "query", "files",
 		"llm_id",
-		"pass_all_history_messages", "pass_all_history",
-		"legacy", "stream",
+		"legacy", "stream", "thinking",
 		"temperature", "top_p", "frequency_penalty", "presence_penalty", "max_tokens",
 	}
 	for _, key := range knownKeys {
@@ -192,7 +247,7 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 	}
 
 	if streamMode {
-		disableWriteDeadlineForSSE(c)
+		clearResponseWriteDeadline(c)
 		c.Header("Content-Type", "text/event-stream")
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Connection", "keep-alive")
@@ -207,7 +262,7 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 				req.ChatID, sessionID,
 				req.Messages, req.Question, req.Files,
 				req.LLMID, genConfig, kwargs,
-				passAllHistory, req.Legacy,
+				req.Legacy,
 				true, streamChan,
 			)
 		}()
@@ -221,16 +276,28 @@ func (h *ChatSessionHandler) ChatCompletions(c *gin.Context) {
 			return true
 		})
 	} else {
+		// The non-stream path computes the whole answer before its first
+		// (and only) write. Agentic runs can take minutes — well past the
+		// server's http.Server.WriteTimeout, which starts when the request
+		// headers are read and is not reset by later writes. Clear the write
+		// deadline so the final JSON write is not aborted with
+		// "write tcp ... i/o timeout" after a long agent run.
+		clearResponseWriteDeadline(c)
 		var result map[string]interface{}
 		result, err = h.chatSessionService.ChatCompletions(
 			c.Request.Context(), userID,
 			req.ChatID, sessionID,
 			req.Messages, req.Question, req.Files,
 			req.LLMID, genConfig, kwargs,
-			passAllHistory, req.Legacy,
+			req.Legacy,
 			false, nil,
 		)
 		if err != nil {
+			var codedErr *common.CodedError
+			if errors.As(err, &codedErr) {
+				common.ErrorWithCode(c, codedErr.Code, codedErr.Message)
+				return
+			}
 			common.ResponseWithHttpCodeData(c, http.StatusInternalServerError, 500, nil, err.Error())
 			return
 		}
@@ -282,7 +349,8 @@ func (h *ChatSessionHandler) CreateSession(c *gin.Context) {
 		if errors.Is(err, io.EOF) {
 			req = map[string]interface{}{}
 		} else {
-			common.ResponseWithCodeData(c, common.CodeArgumentError, nil, err.Error())
+			// Mirror Python's malformed-JSON contract message.
+			common.ResponseWithCodeData(c, common.CodeArgumentError, nil, "Malformed JSON syntax: Missing commas/brackets or invalid encoding")
 			return
 		}
 	}
@@ -329,7 +397,8 @@ func (h *ChatSessionHandler) DeleteSessions(c *gin.Context) {
 		if errors.Is(err, io.EOF) {
 			req = map[string]interface{}{}
 		} else {
-			common.ResponseWithCodeData(c, common.CodeArgumentError, nil, err.Error())
+			// Mirror Python's malformed-JSON contract message.
+			common.ResponseWithCodeData(c, common.CodeArgumentError, nil, "Malformed JSON syntax: Missing commas/brackets or invalid encoding")
 			return
 		}
 	}
@@ -361,18 +430,10 @@ func (h *ChatSessionHandler) UpdateSession(c *gin.Context) {
 	userID := user.ID
 	chatID, sessionID := c.Param("chat_id"), c.Param("session_id")
 
+	// An empty payload is a valid no-op (mirrors Python's update_session).
 	req := map[string]any{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		if errors.Is(err, io.EOF) {
-			common.ResponseWithCodeData(c, common.CodeArgumentError, nil,
-				"Request body cannot be empty")
-			return
-		}
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
 		common.ResponseWithCodeData(c, common.CodeArgumentError, nil, "Invalid request: "+err.Error())
-		return
-	}
-	if len(req) == 0 {
-		common.ResponseWithCodeData(c, common.CodeArgumentError, nil, "Request body cannot be empty")
 		return
 	}
 

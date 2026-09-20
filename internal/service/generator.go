@@ -86,7 +86,7 @@ func KeywordExtraction(ctx context.Context, chatModel *modelModule.ChatModel, co
 
 	// Clean up response - remove thinking tags if present
 	result := strings.TrimSpace(*response.Answer)
-	result = thinkBlockRE.ReplaceAllString(result, "")
+	result = common.StripThinkTrailing(result)
 	result = strings.TrimSpace(result)
 
 	if strings.Contains(result, "**ERROR**") {
@@ -106,12 +106,12 @@ func CrossLanguages(ctx context.Context, tenantID string, llmID string, query st
 		zap.String("llmID", llmID),
 		zap.Strings("languages", languages))
 
-	modelProviderSvc := NewModelProviderService()
+	modelSolver := NewModelSolver()
 	var chatModel *modelModule.ChatModel
 	var err error
 
 	if llmID != "" {
-		modelTypes, err := modelProviderSvc.ResolveModelType(tenantID, llmID)
+		modelTypes, err := modelSolver.ResolveModelType(ctx, tenantID, llmID)
 		if err != nil {
 			return query, fmt.Errorf("failed to get model type: %w", err)
 		}
@@ -122,17 +122,17 @@ func CrossLanguages(ctx context.Context, tenantID string, llmID string, query st
 				break
 			}
 		}
-		driver, modelName, apiConfig, _, err := modelProviderSvc.ResolveModelConfig(tenantID, resolvedType, llmID)
+		target, err := modelSolver.ResolveModelConfig(ctx, tenantID, resolvedType, llmID)
 		if err != nil {
 			return query, fmt.Errorf("failed to get chat model: %w", err)
 		}
-		chatModel = modelModule.NewChatModel(driver, &modelName, apiConfig)
+		chatModel = modelModule.NewChatModel(target.Driver, &target.ModelName, target.APIConfig)
 	} else {
-		driver, modelName, apiConfig, _, err := modelProviderSvc.GetTenantDefaultModelByType(tenantID, entity.ModelTypeChat)
+		target, err := modelSolver.ResolveDefaultModelConfig(ctx, tenantID, entity.ModelTypeChat)
 		if err != nil {
 			return query, fmt.Errorf("failed to get default chat model: %w", err)
 		}
-		chatModel = modelModule.NewChatModel(driver, &modelName, apiConfig)
+		chatModel = modelModule.NewChatModel(target.Driver, &target.ModelName, target.APIConfig)
 	}
 	if chatModel == nil {
 		return query, fmt.Errorf("failed to get chat model: nil chat model")
@@ -188,7 +188,7 @@ func CrossLanguages(ctx context.Context, tenantID string, llmID string, query st
 	result := *response.Answer
 
 	// Clean up response - remove think tags and trim
-	result = thinkBlockRE.ReplaceAllString(result, "")
+	result = common.StripThinkTrailing(result)
 
 	if strings.Contains(result, "**ERROR**") {
 		return query, nil
@@ -350,7 +350,7 @@ func FullQuestion(
 		return fallbackToLatestUser(messages), fmt.Errorf("FullQuestion: empty response")
 	}
 	cleaned := strings.TrimSpace(*resp.Answer)
-	cleaned = thinkBlockRE.ReplaceAllString(cleaned, "")
+	cleaned = common.StripThinkTrailing(cleaned)
 	cleaned = strings.TrimSpace(cleaned)
 	if errorMarkerRE.MatchString(cleaned) {
 		return fallbackToLatestUser(messages), nil

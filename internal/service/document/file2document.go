@@ -40,8 +40,8 @@ var (
 	ErrLinkFileNotFound = errors.New("File not found!")
 	// ErrLinkDatasetNotFound mirrors Python "Can't find this dataset!".
 	ErrLinkDatasetNotFound = errors.New("Can't find this dataset!")
-	// ErrLinkNoAuthorization mirrors Python "No authorization.".
-	ErrLinkNoAuthorization = errors.New("No authorization.")
+	// ErrLinkNoAuthorization mirrors Python "no authorization".
+	ErrLinkNoAuthorization = errors.New("no authorization")
 	// ErrLinkInternal is a generic, safe-to-expose internal failure.
 	ErrLinkInternal = errors.New("Internal server error.")
 )
@@ -76,9 +76,6 @@ type LinkToDatasetsRequest struct {
 
 // LinkToDatasets validates inputs, expands folders, checks permissions, and
 // schedules convertFiles in a goroutine — mirroring Python convert().
-// mode is "add" (link on top of existing KBs) or "replace" (remove existing
-// links first); any other value behaves as "replace", matching Python.
-// Returns immediately (fire-and-forget for the heavy DB work).
 //
 // On validation failure it returns a sentinel error (see ErrLink* above) so the
 // handler can map it to a Python-compatible response without leaking internals.
@@ -102,7 +99,7 @@ func (s *File2DocumentService) LinkToDatasets(ctx context.Context, userID string
 	// ── 2. Validate KBs exist ────────────────────────────────────────────────
 	kbMap := make(map[string]*entity.Knowledgebase, len(req.KbIDs))
 	for _, kbID := range req.KbIDs {
-		kb, err := s.kbDAO.GetByID(kbID)
+		kb, err := s.kbDAO.GetByID(ctx, dao.DB, kbID)
 		if err != nil || kb == nil {
 			return ErrLinkDatasetNotFound
 		}
@@ -142,7 +139,7 @@ func (s *File2DocumentService) LinkToDatasets(ctx context.Context, userID string
 
 	// ── 5. Validate KB permissions ────────────────────────────────────────────
 	for _, kb := range kbMap {
-		if !service.HasKBTeamPermission(kb, userID, dao.NewTenantDAO()) {
+		if !service.HasKBTeamPermission(ctx, kb, userID, dao.NewTenantDAO()) {
 			return ErrLinkNoAuthorization
 		}
 	}
@@ -162,12 +159,15 @@ func (s *File2DocumentService) LinkToDatasets(ctx context.Context, userID string
 	return nil
 }
 
-// convertFiles mirrors Python _convert_files: for each file, depending on mode,
-// either remove existing documents/mappings (replace) or keep them and skip
-// already-linked KBs (add), then create a new document in each target KB and
-// a fresh mapping.
+// convertFiles mirrors Python _convert_files: keep existing links, remove links
+// outside the requested KBs in replace mode, then add any missing links.
 func (s *File2DocumentService) convertFiles(ctx context.Context, fileIDs, kbIDs []string, userID, mode string) error {
 	replaceExisting := mode != "add"
+	kbIDs = dedupeStrings(kbIDs)
+	requestedKBIDs := make(map[string]struct{}, len(kbIDs))
+	for _, kbID := range kbIDs {
+		requestedKBIDs[kbID] = struct{}{}
+	}
 	for _, fileID := range fileIDs {
 		mappings, err := s.file2DocumentDAO.GetByFileID(ctx, dao.DB, fileID)
 		if err != nil {
@@ -175,39 +175,26 @@ func (s *File2DocumentService) convertFiles(ctx context.Context, fileIDs, kbIDs 
 		}
 
 		existingKBIDs := make(map[string]struct{})
-		if replaceExisting {
-			// Remove existing documents linked to this file. Routing through
-			// DocumentService.RemoveDocumentKeepFile ensures KB doc_num/chunk_num/
-			// token_num counters are decremented (mirrors Python remove_document)
-			// while preserving the file record itself for re-linking.
-			for _, m := range mappings {
-				if m.DocumentID == nil {
-					continue
-				}
-				if err = s.documentSvc.RemoveDocumentKeepFile(ctx, *m.DocumentID); err != nil {
-					common.Warn("convertFiles: RemoveDocumentKeepFile failed",
-						zap.String("docID", *m.DocumentID), zap.Error(err))
-				}
+		for _, m := range mappings {
+			if m.DocumentID == nil {
+				continue
 			}
-			// Drop the file2document mappings for this file (mirrors Python
-			// File2DocumentService.delete_by_file_id, done once per file).
-			if err = s.file2DocumentDAO.DeleteByFileID(ctx, dao.DB, fileID); err != nil {
-				common.Warn("convertFiles: DeleteByFileID failed", zap.String("fileID", fileID), zap.Error(err))
+			doc, getErr := s.documentDAO.GetByID(ctx, dao.DB, *m.DocumentID)
+			if getErr != nil || doc == nil {
+				continue
 			}
-		} else {
-			// "add" mode: collect KB IDs already linked to this file so we
-			// skip them when creating new documents below. Existing links
-			// are preserved (mirrors Python _convert_files add path).
-			var doc *entity.Document
-			for _, m := range mappings {
-				if m.DocumentID == nil {
+			existingKBIDs[doc.KbID] = struct{}{}
+			if replaceExisting {
+				if _, exists := requestedKBIDs[doc.KbID]; exists {
 					continue
 				}
-				doc, err = s.documentDAO.GetByID(ctx, dao.DB, *m.DocumentID)
-				if err != nil || doc == nil {
+				if err = s.documentSvc.RemoveDocumentKeepFile(ctx, doc.ID); err != nil {
+					common.Warn("convertFiles: RemoveDocumentKeepFile failed", zap.String("docID", doc.ID), zap.Error(err))
 					continue
 				}
-				existingKBIDs[doc.KbID] = struct{}{}
+				if err = s.file2DocumentDAO.DeleteByDocumentID(ctx, dao.DB, doc.ID); err != nil {
+					common.Warn("convertFiles: DeleteByDocumentID failed", zap.String("docID", doc.ID), zap.Error(err))
+				}
 			}
 		}
 
@@ -222,7 +209,7 @@ func (s *File2DocumentService) convertFiles(ctx context.Context, fileIDs, kbIDs 
 			if _, exists := existingKBIDs[kbID]; exists {
 				continue
 			}
-			kb, err := s.kbDAO.GetByID(kbID)
+			kb, err := s.kbDAO.GetByID(ctx, dao.DB, kbID)
 			if err != nil || kb == nil {
 				continue
 			}
