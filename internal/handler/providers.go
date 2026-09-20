@@ -17,6 +17,8 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -24,6 +26,7 @@ import (
 	"ragflow/internal/dao"
 	"ragflow/internal/entity/models"
 	"ragflow/internal/service"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -74,9 +77,10 @@ func (h *ProviderHandler) ListProviders(c *gin.Context) {
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
 	// list tenant providers
-	providers, errorCode, err := h.modelProviderService.ListProvidersOfTenant(userID)
+	providers, errorCode, err := h.modelProviderService.ListProvidersOfTenant(ctx, userID)
 	if err != nil {
 		common.ResponseWithCodeData(c, errorCode, nil, err.Error())
 		return
@@ -99,8 +103,9 @@ func (h *ProviderHandler) AddProvider(c *gin.Context) {
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	errorCode, err := h.modelProviderService.AddModelProvider(req.ProviderName, userID)
+	errorCode, err := h.modelProviderService.AddModelProvider(ctx, req.ProviderName, userID)
 	if err != nil {
 		common.ErrorWithCode(c, errorCode, err.Error())
 		return
@@ -110,15 +115,16 @@ func (h *ProviderHandler) AddProvider(c *gin.Context) {
 }
 
 func (h *ProviderHandler) DeleteProvider(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	errorCode, err := h.modelProviderService.DeleteModelProvider(userID, providerName)
+	errorCode, err := h.modelProviderService.DeleteModelProvider(ctx, userID, providerName)
 	if err != nil {
 		common.ErrorWithCode(c, errorCode, err.Error())
 		return
@@ -128,7 +134,7 @@ func (h *ProviderHandler) DeleteProvider(c *gin.Context) {
 }
 
 func (h *ProviderHandler) ShowProvider(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
@@ -143,24 +149,42 @@ func (h *ProviderHandler) ShowProvider(c *gin.Context) {
 }
 
 func (h *ProviderHandler) ListModels(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	// 1. Get static models from config (may be nil when models list is empty)
+	// 1. Get static models from config (maybe nil when models list is empty)
 	staticModels, _ := dao.GetModelProviderManager().ListModels(providerName)
 	if staticModels == nil {
 		staticModels = []map[string]interface{}{}
 	}
 
-	// 2. Attempt live API fetch when api_key and base_url are provided
+	// 2. Attempt live API fetch when the provider has enough connection data.
 	apiKey := c.Query("api_key")
 	baseURL := c.Query("base_url")
 	var remoteModels []map[string]interface{}
+	remoteFetched := false
 
-	if apiKey != "" && baseURL != "" {
+	bedrockProvider := strings.EqualFold(providerName, "Bedrock")
+	bedrockAPIKeyAuth := false
+	if bedrockProvider && apiKey != "" {
+		var key struct {
+			AuthMode string `json:"auth_mode"`
+		}
+		if err := json.Unmarshal([]byte(apiKey), &key); err == nil {
+			bedrockAPIKeyAuth = key.AuthMode == "bedrock_api_key"
+		}
+	}
+
+	canFetchRemote := baseURL != ""
+	if bedrockProvider {
+		// Bedrock's existing SigV4 modes keep using the static catalog. Only
+		// API-key auth needs a live catalog scoped to the supplied credential.
+		canFetchRemote = bedrockAPIKeyAuth
+	}
+	if canFetchRemote {
 		providerInfo := dao.GetModelProviderManager().FindProvider(providerName)
 		if providerInfo != nil && providerInfo.ModelDriver != nil {
 			region := "default"
@@ -172,16 +196,45 @@ func (h *ProviderHandler) ListModels(c *gin.Context) {
 					Region: &region,
 				}
 				if liveModels, err := driver.ListModels(c.Request.Context(), apiConfig); err == nil {
+					remoteFetched = true
 					for _, m := range liveModels {
+						maxTokens := 8192
+						if m.MaxOutput != nil {
+							maxTokens = *m.MaxOutput
+						}
 						remoteModels = append(remoteModels, map[string]interface{}{
 							"name":        m.Name,
 							"model_types": m.ModelTypes,
-							"max_tokens":  m.MaxTokens,
+							"max_tokens":  maxTokens,
 						})
 					}
+				} else if bedrockAPIKeyAuth {
+					common.ErrorWithCode(c, common.CodeServerError, err.Error())
+					return
 				}
 			}
 		}
+	}
+	if remoteFetched && bedrockAPIKeyAuth {
+		if len(remoteModels) == 0 {
+			common.ErrorWithCode(c, common.CodeDataError, "No Bedrock models were discovered")
+			return
+		}
+		remoteNames := make(map[string]struct{}, len(remoteModels))
+		for _, model := range remoteModels {
+			if name, ok := model["name"].(string); ok {
+				remoteNames[name] = struct{}{}
+			}
+		}
+		filtered := staticModels[:0]
+		for _, model := range staticModels {
+			if name, ok := model["name"].(string); ok {
+				if _, exists := remoteNames[name]; exists {
+					filtered = append(filtered, model)
+				}
+			}
+		}
+		staticModels = filtered
 	}
 
 	// 3. Both empty — return empty success
@@ -193,21 +246,37 @@ func (h *ProviderHandler) ListModels(c *gin.Context) {
 	// 4. Merge: static as base, remote overrides on name conflicts
 	merged := make(map[string]map[string]interface{})
 	for _, m := range staticModels {
+		if maxTokens, ok := m["max_tokens"]; !ok || maxTokens == nil {
+			if maxOutput, ok := m["max_output"]; ok && maxOutput != nil {
+				m["max_tokens"] = maxOutput
+			}
+		}
 		if name, ok := m["name"].(string); ok {
 			merged[name] = m
 		}
 	}
 	for _, m := range remoteModels {
 		if name, ok := m["name"].(string); ok {
+			if existing, exists := merged[name]; exists {
+				if len(providerModelMapTypes(m)) == 0 && len(providerModelMapTypes(existing)) > 0 {
+					m["model_types"] = existing["model_types"]
+				}
+				if maxTokens, ok := existing["max_tokens"]; ok && maxTokens != nil {
+					m["max_tokens"] = maxTokens
+				}
+			}
 			merged[name] = m
 		}
 	}
 
-	// 5. Sort by name
+	// 5. Fill missing model types using only the merged list.
 	result := make([]map[string]interface{}, 0, len(merged))
 	for _, m := range merged {
 		result = append(result, m)
 	}
+	fillProviderModelMapTypes(result)
+
+	// 6. Sort by name
 	sort.Slice(result, func(i, j int) bool {
 		ni, _ := result[i]["name"].(string)
 		nj, _ := result[j]["name"].(string)
@@ -217,8 +286,46 @@ func (h *ProviderHandler) ListModels(c *gin.Context) {
 	common.SuccessWithData(c, result, "success")
 }
 
+func fillProviderModelMapTypes(result []map[string]interface{}) {
+	list := make([]models.ListModelResponse, 0, len(result))
+	indexes := make([]int, 0, len(result))
+	for i, model := range result {
+		name, _ := model["name"].(string)
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		list = append(list, models.ListModelResponse{
+			Name:       name,
+			ModelTypes: providerModelMapTypes(model),
+		})
+		indexes = append(indexes, i)
+	}
+	list = models.FillMissingModelTypes(list)
+	for i, model := range list {
+		result[indexes[i]]["model_types"] = model.ModelTypes
+	}
+}
+
+func providerModelMapTypes(model map[string]interface{}) []string {
+	switch modelTypes := model["model_types"].(type) {
+	case []string:
+		return modelTypes
+	case []interface{}:
+		types := make([]string, 0, len(modelTypes))
+		for _, modelType := range modelTypes {
+			if s, ok := modelType.(string); ok {
+				types = append(types, s)
+			}
+		}
+		return types
+	default:
+		return nil
+	}
+}
+
 func (h *ProviderHandler) ShowModel(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
@@ -239,14 +346,50 @@ func (h *ProviderHandler) ShowModel(c *gin.Context) {
 
 type CreateProviderInstanceRequest struct {
 	InstanceName string                            `json:"instance_name" binding:"required"`
-	APIKey       string                            `json:"api_key"`
+	APIKey       json.RawMessage                   `json:"api_key"`
 	BaseURL      string                            `json:"base_url"`
 	Region       string                            `json:"region"`
 	ModelInfo    []service.CreateInstanceModelInfo `json:"model_info"`
 }
 
+// instanceNamePattern restricts an instance name to digits, underscores,
+// hyphens, and ASCII letters in both cases.
+var instanceNamePattern = regexp.MustCompile(`^[0-9A-Za-z_-]+$`)
+
+// validateInstanceName rejects an empty instance name or one carrying any
+// character outside digits, underscores, hyphens, and ASCII letters.
+func validateInstanceName(instanceName string) error {
+	if instanceName == "" {
+		return errors.New("instance name is required")
+	}
+	if !instanceNamePattern.MatchString(instanceName) {
+		return errors.New("instance name may only contain digits, underscores, hyphens, and letters")
+	}
+	return nil
+}
+
+// normalizeAPIKey accepts api_key as either a JSON string or a JSON object
+// (credential bundles such as XunFei Spark's
+// {"spark_api_password": ..., "spark_app_id": ..., ...}) and normalizes it to
+// the string form persisted on the instance.
+func normalizeAPIKey(raw json.RawMessage) string {
+	trimmed := strings.TrimSpace(string(raw))
+	if trimmed == "" || trimmed == "null" {
+		return ""
+	}
+	var s string
+	if err := json.Unmarshal(raw, &s); err == nil {
+		return s
+	}
+	var buf bytes.Buffer
+	if err := json.Compact(&buf, raw); err != nil {
+		return trimmed
+	}
+	return buf.String()
+}
+
 func (h *ProviderHandler) CreateProviderInstance(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
@@ -259,13 +402,19 @@ func (h *ProviderHandler) CreateProviderInstance(c *gin.Context) {
 		return
 	}
 
+	if err := validateInstanceName(req.InstanceName); err != nil {
+		common.ErrorWithCode(c, common.CodeBadRequest, err.Error())
+		return
+	}
+
 	userID := c.GetString("user_id")
+	apiKey := normalizeAPIKey(req.APIKey)
 
 	// If the request body only contains "instance_name", create a name-only
 	// instance without API key validation or model creation.
 	// Mirrors Python's provider_api.py:349 — set(data.keys()) == {"instance_name"}.
-	if req.APIKey == "" && req.BaseURL == "" && req.Region == "" && len(req.ModelInfo) == 0 {
-		code, err := h.modelProviderService.CreateNameOnlyProviderInstance(providerName, req.InstanceName, userID)
+	if apiKey == "" && req.BaseURL == "" && req.Region == "" && len(req.ModelInfo) == 0 {
+		code, err := h.modelProviderService.CreateNameOnlyProviderInstance(ctx, providerName, req.InstanceName, userID)
 		if err != nil {
 			common.ErrorWithCode(c, code, err.Error())
 			return
@@ -274,9 +423,9 @@ func (h *ProviderHandler) CreateProviderInstance(c *gin.Context) {
 		return
 	}
 
-	_, err := h.modelProviderService.CreateProviderInstance(ctx, providerName, req.InstanceName, req.APIKey, req.BaseURL, req.Region, userID, req.ModelInfo)
+	code, err := h.modelProviderService.CreateProviderInstance(ctx, providerName, req.InstanceName, apiKey, req.BaseURL, req.Region, userID, req.ModelInfo)
 	if err != nil {
-		common.ErrorWithCode(c, common.CodeServerError, err.Error())
+		common.ErrorWithCode(c, code, err.Error())
 		return
 	}
 
@@ -284,15 +433,16 @@ func (h *ProviderHandler) CreateProviderInstance(c *gin.Context) {
 }
 
 func (h *ProviderHandler) ListProviderInstances(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	instances, errorCode, err := h.modelProviderService.ListProviderInstances(providerName, userID)
+	instances, errorCode, err := h.modelProviderService.ListProviderInstances(ctx, providerName, userID)
 	if err != nil {
 		common.ErrorWithCode(c, errorCode, err.Error())
 		return
@@ -302,21 +452,22 @@ func (h *ProviderHandler) ListProviderInstances(c *gin.Context) {
 }
 
 func (h *ProviderHandler) ShowProviderInstance(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceIDOrName := c.Param("instance_name")
+	instanceIDOrName := c.Param("instance_id_or_name")
 	if instanceIDOrName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	instance, errorCode, err := h.modelProviderService.ShowProviderInstance(providerName, instanceIDOrName, userID)
+	instance, errorCode, err := h.modelProviderService.ShowProviderInstance(ctx, providerName, instanceIDOrName, userID)
 	if err != nil {
 		common.ErrorWithCode(c, errorCode, err.Error())
 		return
@@ -326,13 +477,13 @@ func (h *ProviderHandler) ShowProviderInstance(c *gin.Context) {
 }
 
 func (h *ProviderHandler) ShowInstanceBalance(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -352,7 +503,7 @@ func (h *ProviderHandler) ShowInstanceBalance(c *gin.Context) {
 }
 
 func (h *ProviderHandler) CheckConnection(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
@@ -366,7 +517,7 @@ func (h *ProviderHandler) CheckConnection(c *gin.Context) {
 	}
 
 	userID := c.GetString("user_id")
-	errCode, err := h.modelProviderService.CheckConnection(ctx, providerName, req.APIKey, req.Region, req.BaseURL, req.InstanceID, userID, req.ModelInfo)
+	errCode, err := h.modelProviderService.CheckConnection(ctx, providerName, normalizeAPIKey(req.APIKey), req.Region, req.BaseURL, req.InstanceID, userID, req.ModelInfo)
 	if err != nil {
 		common.ErrorWithCode(c, errCode, err.Error())
 		return
@@ -377,21 +528,20 @@ func (h *ProviderHandler) CheckConnection(c *gin.Context) {
 
 func (h *ProviderHandler) CheckInstanceConnection(c *gin.Context) {
 	ctx := c.Request.Context()
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
 	}
-
 	userID := c.GetString("user_id")
 
-	instanceInfo, code, err := h.modelProviderService.ShowProviderInstance(providerName, instanceName, userID)
+	instanceInfo, code, err := h.modelProviderService.ShowProviderInstance(ctx, providerName, instanceName, userID)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return
@@ -413,13 +563,13 @@ func (h *ProviderHandler) CheckInstanceConnection(c *gin.Context) {
 
 func (h *ProviderHandler) ListTasks(c *gin.Context) {
 	ctx := c.Request.Context()
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -439,13 +589,13 @@ func (h *ProviderHandler) ListTasks(c *gin.Context) {
 
 func (h *ProviderHandler) ShowTask(c *gin.Context) {
 	ctx := c.Request.Context()
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -470,23 +620,22 @@ func (h *ProviderHandler) ShowTask(c *gin.Context) {
 }
 
 type AlterProviderInstanceRequest struct {
-	InstanceName string                            `json:"instance_name"`
-	APIKey       string                            `json:"api_key"`
-	BaseURL      string                            `json:"base_url"`
-	Region       string                            `json:"region"`
-	ModelInfo    []service.CreateInstanceModelInfo `json:"model_info"`
-	Verify       *bool                             `json:"verify"`
+	InstanceName string                             `json:"instance_name"`
+	APIKey       json.RawMessage                    `json:"api_key"`
+	BaseURL      string                             `json:"base_url"`
+	Region       string                             `json:"region"`
+	ModelInfo    *[]service.CreateInstanceModelInfo `json:"model_info" binding:"required"`
 }
 
 func (h *ProviderHandler) AlterProviderInstance(c *gin.Context) {
 	ctx := c.Request.Context()
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -504,12 +653,7 @@ func (h *ProviderHandler) AlterProviderInstance(c *gin.Context) {
 		return
 	}
 
-	verify := true
-	if req.Verify != nil {
-		verify = *req.Verify
-	}
-
-	code, err := h.modelProviderService.AlterProviderInstance(ctx, userID, providerName, instanceName, req.InstanceName, req.APIKey, req.BaseURL, req.Region, req.ModelInfo, verify)
+	code, err := h.modelProviderService.AlterProviderInstance(ctx, userID, providerName, instanceName, req.InstanceName, normalizeAPIKey(req.APIKey), req.BaseURL, req.Region, *req.ModelInfo)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return
@@ -519,11 +663,11 @@ func (h *ProviderHandler) AlterProviderInstance(c *gin.Context) {
 }
 
 type DropProviderInstanceRequest struct {
-	Instances []string `json:"instances" binding:"required"`
+	Instances []string `json:"instances" binding:"required,min=1,dive,required"`
 }
 
 func (h *ProviderHandler) DropProviderInstance(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
@@ -535,8 +679,9 @@ func (h *ProviderHandler) DropProviderInstance(c *gin.Context) {
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	code, err := h.modelProviderService.DropProviderInstances(providerName, userID, req.Instances)
+	code, err := h.modelProviderService.DropProviderInstances(ctx, providerName, userID, req.Instances)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return
@@ -547,12 +692,12 @@ func (h *ProviderHandler) DropProviderInstance(c *gin.Context) {
 
 func (h *ProviderHandler) ListInstanceModels(c *gin.Context) {
 	ctx := c.Request.Context()
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -578,7 +723,7 @@ func (h *ProviderHandler) ListInstanceModels(c *gin.Context) {
 		return
 	}
 
-	modelInstances, err := h.modelProviderService.ListInstanceModels(providerName, instanceName, c.GetString("user_id"))
+	modelInstances, err := h.modelProviderService.ListInstanceModels(ctx, providerName, instanceName, c.GetString("user_id"))
 	if err != nil {
 		common.ErrorWithCode(c, common.CodeNotFound, err.Error())
 		return
@@ -595,13 +740,13 @@ type AlterModelRequest struct {
 }
 
 func (h *ProviderHandler) AlterModel(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
 
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -648,7 +793,8 @@ func (h *ProviderHandler) AlterModel(c *gin.Context) {
 		return
 	}
 
-	code, err := h.modelProviderService.AlterModel(providerName, instanceName, modelName, userID, modelID, updateDict)
+	ctx := c.Request.Context()
+	code, err := h.modelProviderService.AlterModel(ctx, providerName, instanceName, modelName, userID, modelID, updateDict)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return
@@ -659,19 +805,19 @@ func (h *ProviderHandler) AlterModel(c *gin.Context) {
 
 func prepareProviderInstance(providerName, instanceName, reqProviderName, reqInstanceName string) error {
 	if providerName == "" {
-		return errors.New("Provider name is required")
+		return errors.New("provider name is required")
 	}
 
 	if instanceName == "" {
-		return errors.New("Instance name is required")
+		return errors.New("instance name is required")
 	}
 
 	if reqProviderName != "" && !strings.EqualFold(reqProviderName, providerName) {
-		return errors.New("Provider name does not match path")
+		return errors.New("provider name does not match path")
 	}
 
 	if reqInstanceName != "" && !strings.EqualFold(reqInstanceName, instanceName) {
-		return errors.New("Instance name does not match path")
+		return errors.New("instance name does not match path")
 	}
 
 	return nil
@@ -685,8 +831,8 @@ func (h *ProviderHandler) AddModel(c *gin.Context) {
 		return
 	}
 
-	req.ProviderName = c.Param("provider_name")
-	req.InstanceName = c.Param("instance_name")
+	req.ProviderName = c.Param("provider_id_or_name")
+	req.InstanceName = c.Param("instance_id_or_name")
 
 	if req.ProviderName == "" || req.InstanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, common.CodeBadRequest, nil, "provider_name and instance_name are required")
@@ -698,14 +844,10 @@ func (h *ProviderHandler) AddModel(c *gin.Context) {
 		return
 	}
 
-	if len(req.ModelTypes) == 0 {
-		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, common.CodeBadRequest, nil, "model_type is required")
-		return
-	}
-
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	code, err := h.modelProviderService.AddModel(&req, userID)
+	code, err := h.modelProviderService.AddModel(ctx, &req, userID)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return
@@ -719,12 +861,12 @@ type DropInstanceModelRequest struct {
 }
 
 func (h *ProviderHandler) DropInstanceModels(c *gin.Context) {
-	providerName := c.Param("provider_name")
+	providerName := c.Param("provider_id_or_name")
 	if providerName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
 		return
 	}
-	instanceName := c.Param("instance_name")
+	instanceName := c.Param("instance_id_or_name")
 	if instanceName == "" {
 		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Instance name is required")
 		return
@@ -741,8 +883,9 @@ func (h *ProviderHandler) DropInstanceModels(c *gin.Context) {
 	}
 
 	userID := c.GetString("user_id")
+	ctx := c.Request.Context()
 
-	code, err := h.modelProviderService.DropInstanceModels(providerName, instanceName, userID, req.ModelNames)
+	code, err := h.modelProviderService.DropInstanceModels(ctx, providerName, instanceName, userID, req.ModelNames)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return
@@ -752,6 +895,8 @@ func (h *ProviderHandler) DropInstanceModels(c *gin.Context) {
 }
 
 type ChatToModelRequest struct {
+	Question     string                   `json:"question,omitempty"`
+	Query        string                   `json:"query,omitempty"`
 	ProviderName *string                  `json:"provider_name"`
 	InstanceName *string                  `json:"instance_name"`
 	ModelName    *string                  `json:"model_name"`
@@ -772,6 +917,17 @@ func (h *ProviderHandler) ChatToModel(c *gin.Context) {
 		return
 	}
 
+	question, err := service.ResolveCompletionQuestion(req.Question, req.Query, req.Messages)
+	if err != nil {
+		common.ErrorWithCode(c, common.CodeArgumentError, err.Error())
+		return
+	}
+	if req.Question != "" || req.Query != "" {
+		req.Messages = []map[string]interface{}{{"role": "user", "content": question}}
+	}
+	if len(req.Messages) > 0 {
+		req.Messages = req.Messages[len(req.Messages)-1:]
+	}
 	if req.ModelID == nil {
 		if req.ProviderName == nil || *req.ProviderName == "" {
 			common.ResponseWithHttpCodeData(c, http.StatusBadRequest, 400, nil, "Provider name is required")
@@ -830,7 +986,7 @@ func (h *ProviderHandler) ChatToModel(c *gin.Context) {
 	// Check if it's a stream request
 	if req.Stream {
 		// Set SSE headers
-		disableWriteDeadlineForSSE(c)
+		clearResponseWriteDeadline(c)
 		c.Header("Content-Type", "text/event-stream")
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Connection", "keep-alive")
@@ -892,7 +1048,6 @@ func (h *ProviderHandler) ChatToModel(c *gin.Context) {
 	// Non-stream response
 	var response *models.ChatResponse
 	var errorCode common.ErrorCode
-	var err error
 
 	// Convert []map[string]interface{} to []models.Message
 	messages := make([]models.Message, len(req.Messages))
@@ -1115,7 +1270,7 @@ func (h *ProviderHandler) TranscribeAudio(c *gin.Context) {
 	// Check if it's a stream request
 	if req.Stream {
 		// Set SSE headers
-		disableWriteDeadlineForSSE(c)
+		clearResponseWriteDeadline(c)
 		c.Header("Content-Type", "text/event-stream")
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Connection", "keep-alive")
@@ -1223,7 +1378,7 @@ func (h *ProviderHandler) AudioSpeech(c *gin.Context) {
 	// Check if it's a stream request
 	if req.Stream {
 		// Set SSE headers
-		disableWriteDeadlineForSSE(c)
+		clearResponseWriteDeadline(c)
 		c.Header("Content-Type", "text/event-stream")
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Connection", "keep-alive")
@@ -1425,8 +1580,9 @@ func (h *ProviderHandler) ListTenantAddedModels(c *gin.Context) {
 
 	modelType := c.Query("type")
 	ownerTenantID := c.Query("owner_tenant_id")
+	ctx := c.Request.Context()
 
-	addedModels, code, err := h.modelProviderService.ListTenantAddedModels(user.ID, ownerTenantID, modelType)
+	addedModels, code, err := h.modelProviderService.ListTenantAddedModels(ctx, user.ID, ownerTenantID, modelType)
 	if err != nil {
 		common.ErrorWithCode(c, code, err.Error())
 		return

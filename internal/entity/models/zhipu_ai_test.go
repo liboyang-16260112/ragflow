@@ -17,6 +17,41 @@ func newZhipuAIForTest(baseURL string) *ZhipuAIModel {
 	)
 }
 
+func TestZhipuAIChatForwardsMultimodalContentBlocks(t *testing.T) {
+	withSSRFBypass(t)
+	var request map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/chat/completions" {
+			t.Errorf("path=%s, want /chat/completions", r.URL.Path)
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"choices": []any{map[string]any{"message": map[string]any{"content": "ok"}}}})
+	}))
+	defer srv.Close()
+
+	key := "test-key"
+	_, err := NewZhipuAIModel(map[string]string{"default": srv.URL}, URLSuffix{Chat: "chat/completions"}).ChatWithMessages(
+		t.Context(), "glm-4.7", []Message{{Role: "user", Content: []interface{}{
+			map[string]any{"type": "text", "text": "describe"},
+			map[string]any{"type": "image_url", "image_url": map[string]any{"url": "data:image/png;base64,AA=="}},
+		}}}, &APIConfig{ApiKey: &key}, nil, nil,
+	)
+	if err != nil {
+		t.Fatalf("ChatWithMessages: %v", err)
+	}
+	messages, ok := request["messages"].([]any)
+	if !ok || len(messages) != 1 {
+		t.Fatalf("messages = %#v, want one request message", request["messages"])
+	}
+	message := messages[0].(map[string]any)
+	parts, ok := message["content"].([]any)
+	if !ok || len(parts) != 2 || parts[1].(map[string]any)["type"] != "image_url" {
+		t.Fatalf("content = %#v, want text + image_url blocks", message["content"])
+	}
+}
+
 func writeZhipuAITestAudio(t *testing.T) string {
 	t.Helper()
 
@@ -33,6 +68,7 @@ func writeZhipuAITestAudio(t *testing.T) string {
 }
 
 func TestZhipuAITranscribeAudio(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -117,6 +153,7 @@ func TestZhipuAITranscribeAudio(t *testing.T) {
 }
 
 func TestZhipuAITranscribeAudioValidation(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	apiKey := "test-key"
 	modelName := "glm-asr-2512"
@@ -145,6 +182,7 @@ func TestZhipuAITranscribeAudioValidation(t *testing.T) {
 }
 
 func TestZhipuAITranscribeAudioRequiresASRSuffix(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	apiKey := "test-key"
 	modelName := "glm-asr-2512"
@@ -163,6 +201,7 @@ func TestZhipuAITranscribeAudioRequiresASRSuffix(t *testing.T) {
 }
 
 func TestZhipuAITranscribeAudioHTTPError(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -180,6 +219,7 @@ func TestZhipuAITranscribeAudioHTTPError(t *testing.T) {
 }
 
 func TestZhipuAIAudioSpeech(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -250,6 +290,7 @@ func TestZhipuAIAudioSpeech(t *testing.T) {
 }
 
 func TestZhipuAIAudioSpeechWithSender(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]interface{}
@@ -295,6 +336,7 @@ func TestZhipuAIAudioSpeechWithSender(t *testing.T) {
 }
 
 func TestZhipuAIAudioSpeechValidation(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	apiKey := "test-key"
 	modelName := "glm-tts"
@@ -323,6 +365,7 @@ func TestZhipuAIAudioSpeechValidation(t *testing.T) {
 }
 
 func TestZhipuAIAudioSpeechRequiresTTSSuffix(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	apiKey := "test-key"
 	modelName := "glm-tts"
@@ -341,6 +384,7 @@ func TestZhipuAIAudioSpeechRequiresTTSSuffix(t *testing.T) {
 }
 
 func TestZhipuAIAudioSpeechHTTPError(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -358,6 +402,7 @@ func TestZhipuAIAudioSpeechHTTPError(t *testing.T) {
 }
 
 func TestZhipuAIChatStreamlyWithSenderCollectsToolCalls(t *testing.T) {
+	withSSRFBypass(t)
 	ctx := t.Context()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

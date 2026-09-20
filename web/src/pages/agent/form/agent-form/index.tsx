@@ -4,6 +4,7 @@ import {
   LargeModelFormField,
 } from '@/components/large-model-form-field';
 import { LlmSettingSchema } from '@/components/llm-setting-items/next';
+import { SliderInputSwitchFormField } from '@/components/llm-setting-items/slider';
 import { MessageHistoryWindowSizeFormField } from '@/components/message-history-window-size-item';
 import { SelectWithSearch } from '@/components/originui/select-with-search';
 import { RAGFlowFormItem } from '@/components/ragflow-form';
@@ -15,10 +16,11 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form';
-import { Input, NumberInput } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import NumberInputStepper from '@/components/originui/number-input';
 import { useFindLlmByUuid } from '@/hooks/use-llm-request';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { get } from 'lodash';
@@ -49,8 +51,10 @@ import {
   useHandleShowStructuredOutput,
   useShowStructuredOutputDialog,
 } from './use-show-structured-output-dialog';
+import { useGetAgentMCPIds } from './use-get-tools';
 import { useValues } from './use-values';
 import { useWatchFormChange } from './use-watch-change';
+import NumberInput from '@/components/originui/number-input';
 
 const FormSchema = z.object({
   sys_prompt: z.string(),
@@ -74,6 +78,7 @@ const FormSchema = z.object({
   exception_method: z.string().optional(),
   exception_goto: z.array(z.string()).optional(),
   exception_default_value: z.string().optional(),
+  tool_timeout: z.coerce.number().optional(),
   ...LargeModelFilterFormSchema,
   cite: z.boolean().optional(),
   showStructuredOutput: z.boolean().optional(),
@@ -118,6 +123,8 @@ function AgentForm({ node }: INextOperatorForm) {
     name: 'exception_method',
   });
 
+  const { mcpIds } = useGetAgentMCPIds();
+
   const showStructuredOutput = useWatch({
     control: form.control,
     name: 'showStructuredOutput',
@@ -158,6 +165,24 @@ function AgentForm({ node }: INextOperatorForm) {
         <FormWrapper>
           {isSubAgent && <DescriptionField></DescriptionField>}
           <LargeModelFormField></LargeModelFormField>
+          {(mcpIds.length > 0 || hasSubAgentOrTool(edges, node?.id)) && (
+            <FormField
+              control={form.control}
+              name={`max_rounds`}
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>{t('flow.maxRounds')}</FormLabel>
+                  <FormControl>
+                    <NumberInput
+                      {...field}
+                      min={0}
+                      className="w-full"
+                    ></NumberInput>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          )}
           {findLlmByUuid(llmId)?.model_type?.includes('vision') && (
             <QueryVariable
               name="visual_files_var"
@@ -231,7 +256,12 @@ function AgentForm({ node }: INextOperatorForm) {
                   <FormItem className="flex-1">
                     <FormLabel>{t('flow.maxRetries')}</FormLabel>
                     <FormControl>
-                      <NumberInput {...field} max={8} min={0}></NumberInput>
+                      <NumberInput
+                        {...field}
+                        max={8}
+                        min={0}
+                        className="w-full"
+                      ></NumberInput>
                     </FormControl>
                   </FormItem>
                 )}
@@ -243,25 +273,35 @@ function AgentForm({ node }: INextOperatorForm) {
                   <FormItem className="flex-1">
                     <FormLabel>{t('flow.delayAfterError')}</FormLabel>
                     <FormControl>
-                      <NumberInput {...field} max={5} step={0.1}></NumberInput>
+                      <NumberInput
+                        {...field}
+                        max={5}
+                        step={0.1}
+                        className="w-full"
+                      ></NumberInput>
                     </FormControl>
                   </FormItem>
                 )}
               />
-              {hasSubAgentOrTool(edges, node?.id) && (
-                <FormField
-                  control={form.control}
-                  name={`max_rounds`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>{t('flow.maxRounds')}</FormLabel>
-                      <FormControl>
-                        <NumberInput {...field} min={0}></NumberInput>
-                      </FormControl>
-                    </FormItem>
+              {mcpIds.length > 0 && (
+                <RAGFlowFormItem
+                  label={t('flow.toolTimeout')}
+                  tooltip={t('flow.toolTimeoutTip')}
+                  name="tool_timeout"
+                >
+                  {(field) => (
+                    <div className="flex gap-2 items-center">
+                      <NumberInputStepper
+                        value={field.value}
+                        onChange={field.onChange}
+                        min={1}
+                      />{' '}
+                      {t('flow.seconds')}
+                    </div>
                   )}
-                />
+                </RAGFlowFormItem>
               )}
+
               <FormField
                 control={form.control}
                 name={`exception_method`}
@@ -294,7 +334,6 @@ function AgentForm({ node }: INextOperatorForm) {
               )}
             </section>
           </Collapse>
-
           <Output list={outputList}>
             <RAGFlowFormItem name="showStructuredOutput">
               {(field) => (

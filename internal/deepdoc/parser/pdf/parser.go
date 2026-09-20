@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"math"
 	"sort"
-	"sync"
 
 	lyt "ragflow/internal/deepdoc/parser/pdf/layout"
 	tbl "ragflow/internal/deepdoc/parser/pdf/table"
@@ -21,12 +20,6 @@ import (
 // Stateless after construction — safe to reuse across documents.
 type Parser struct {
 	Config pdf.ParserConfig
-	// deepInfOnce lazily initializes deepInf exactly once, so a Parser shared
-	// across goroutines does not race on the DeepDoc inference slot channel.
-	deepInfOnce sync.Once
-	// deepInf bounds concurrent DeepDoc (deepdoc) inference calls. Created
-	// on first use via limiters(); see parser_concurrency.go.
-	deepInf *deepInfLimiter
 }
 
 // pageResult holds per-page worker-local artifacts produced by
@@ -89,14 +82,7 @@ func NewTableBuilderFor(doc pdf.DocAnalyzer) pdf.TableBuilder {
 // ParseRaw is the internal entry point: runs the core pipeline on an
 // already-opened engine. Exported for tests that inject mock engines.
 func (p *Parser) ParseRaw(ctx context.Context, engine pdf.PDFEngine, docAnalyzer pdf.DocAnalyzer) (*pdf.ParseResult, error) {
-	outlines := p.extractOutlines(engine)
-
-	result, err := p.processPages(ctx, engine, docAnalyzer)
-	if err != nil {
-		return nil, err
-	}
-	result.Outlines = outlines
-	return result, nil
+	return p.processPages(ctx, engine, docAnalyzer)
 }
 
 // ── ParseRaw helper functions ───────────────────────────────────────────────
@@ -167,7 +153,7 @@ func (p *Parser) extractOutlines(engine pdf.PDFEngine) []pdf.Outline {
 // artifacts are returned in pageResult for the global assembly phase.
 //
 // Zoom retry is per-page: if the default zoom produces no boxes and
-// conditions allow (Zoom < 9, !SkipOCR, render succeeded), the page is
+// conditions allow (Zoom < 9, render succeeded), the page is
 // re-rendered at Config.Zoom × DlaScale and OCR/DLA are re-run. This
 // replaces the old document-wide retryZoom pass and ensures only pages
 // that actually need a higher zoom pay the memory cost.
@@ -179,6 +165,12 @@ func (p *Parser) extractOutlines(engine pdf.PDFEngine) []pdf.Outline {
 func (p *Parser) processPage(ctx context.Context, engine pdf.PDFEngine, pg int,
 	docAnalyzer pdf.DocAnalyzer, tb pdf.TableBuilder,
 ) pageResult {
+	// Stamp the page number up front so replay DocAnalyzers can route their
+	// per-page lookups in BOTH the OCR path (processPageBoxes -> OCRDetect/
+	// OCRRecognize) and the DLA/TSR path (enrichOnePageWithDeepDoc also stamps
+	// it later; this covers the earlier OCR calls). Production analyzers ignore
+	// the key, so this is behavior-neutral.
+	ctx = context.WithValue(ctx, pageNumCtxKey, pg)
 	chars, extractErr := engine.ExtractChars(pg)
 	if extractErr != nil {
 		slog.Warn("processPage: ExtractChars failed", "page", pg, "err", extractErr)
@@ -212,7 +204,7 @@ func (p *Parser) processPage(ctx context.Context, engine pdf.PDFEngine, pg int,
 	var dlaRegions []pdf.DLAPageRegions
 
 	if pageImg != nil && renderErr == nil {
-		ocrBoxes, updatedChars, ocrUsed = p.processPageBoxes(ctx, pageImg, chars, pg, renderErr, isScanNoise, docAnalyzer)
+		ocrBoxes, updatedChars, ocrUsed = p.processPageBoxes(ctx, pageImg, chars, pg, renderErr, isScanNoise, docAnalyzer, pageZoom)
 		annotated, pageTables, dlaRegions = p.enrichOnePageWithDeepDoc(
 			ctx, pageImg, ocrBoxes, pg, renderErr, docAnalyzer, tb, pageZoom)
 	}
@@ -223,7 +215,7 @@ func (p *Parser) processPage(ctx context.Context, engine pdf.PDFEngine, pg int,
 
 	// Per-page zoom retry: if no boxes were produced at the default zoom
 	// and conditions allow, re-render at a higher zoom and re-run OCR/DLA.
-	if len(annotated) == 0 && p.Config.Zoom >= 1.0 && !p.Config.SkipOCR && renderErr == nil {
+	if len(annotated) == 0 && p.Config.Zoom >= 1.0 && renderErr == nil {
 		// Cap the retry zoom so a large Config.Zoom cannot drive the retry
 		// render to an unsafe DPI and spike memory on large pages.
 		const maxRetryZoom = 9.0
@@ -231,7 +223,7 @@ func (p *Parser) processPage(ctx context.Context, engine pdf.PDFEngine, pg int,
 		slog.Debug("per-page zoom retry", "page", pg, "zoom", retryZoom)
 		retryImg, retryRenderErr := p.renderAtDPI(ctx, engine, pg, retryZoom*72)
 		if retryRenderErr == nil && retryImg != nil {
-			ocrBoxes, updatedChars, ocrUsed = p.processPageBoxes(ctx, retryImg, chars, pg, retryRenderErr, isScanNoise, docAnalyzer)
+			ocrBoxes, updatedChars, ocrUsed = p.processPageBoxes(ctx, retryImg, chars, pg, retryRenderErr, isScanNoise, docAnalyzer, retryZoom)
 			annotated, pageTables, dlaRegions = p.enrichOnePageWithDeepDoc(
 				ctx, retryImg, ocrBoxes, pg, retryRenderErr, docAnalyzer, tb, retryZoom)
 			pageImg = retryImg
@@ -303,22 +295,22 @@ func (p *Parser) processPage(ctx context.Context, engine pdf.PDFEngine, pg int,
 //     glyphs so downstream median-height/width stats stay meaningful.
 //   - bool: whether OCR was actually used to produce ocrBoxes.
 func (p *Parser) processPageBoxes(ctx context.Context, pageImg image.Image, chars []pdf.TextChar, pg int,
-	renderErr error, isScanNoise bool, docAnalyzer pdf.DocAnalyzer,
+	renderErr error, isScanNoise bool, docAnalyzer pdf.DocAnalyzer, zoom float64,
 ) ([]pdf.TextBox, []pdf.TextChar, bool) {
 	var ocrBoxes []pdf.TextBox
 	ocrUsed := false
 
-	if !p.Config.SkipOCR && renderErr == nil && pageImg != nil {
+	if renderErr == nil && pageImg != nil {
 		hasCleanChars := len(chars) > 0 && !isScanNoise && !util.IsGarbledPage(chars)
 		if hasCleanChars {
-			ocrBoxes = p.ocrMergeChars(ctx, pageImg, chars, docAnalyzer, pg)
+			ocrBoxes = p.ocrMergeChars(ctx, pageImg, chars, docAnalyzer, pg, zoom)
 			ocrUsed = ocrBoxes != nil
 		} else {
 			label := "scan page"
 			if len(chars) > 0 && !isScanNoise {
 				label = "garbled page"
 			}
-			ocrBoxes = p.ocrDetectAndRecognize(ctx, pageImg, docAnalyzer, pg, label)
+			ocrBoxes = p.ocrDetectAndRecognize(ctx, pageImg, docAnalyzer, pg, label, zoom)
 			ocrUsed = ocrBoxes != nil
 			if ocrUsed {
 				// Synthetic OCR chars feed downstream median calculations.
@@ -330,7 +322,7 @@ func (p *Parser) processPageBoxes(ctx context.Context, pageImg image.Image, char
 				}
 			} else if len(chars) > 0 {
 				// Detect failed but chars exist: try the merge path.
-				ocrBoxes = p.ocrMergeChars(ctx, pageImg, chars, docAnalyzer, pg)
+				ocrBoxes = p.ocrMergeChars(ctx, pageImg, chars, docAnalyzer, pg, zoom)
 				ocrUsed = ocrBoxes != nil
 			}
 		}
@@ -339,6 +331,14 @@ func (p *Parser) processPageBoxes(ctx context.Context, pageImg image.Image, char
 	if !ocrUsed && len(chars) > 0 {
 		if ocrBoxes == nil {
 			ocrBoxes = lyt.CharsToBoxes(chars, pg, p.Config.SortByTop)
+		}
+	}
+
+	// Mark OCR-derived boxes so OCR-only post-processing (layout.Dedup*)
+	// can scope itself to them and never de-duplicate char-path content.
+	if ocrUsed {
+		for i := range ocrBoxes {
+			ocrBoxes[i].IsOCR = true
 		}
 	}
 
@@ -422,10 +422,11 @@ func (p *Parser) runPageWorkers(ctx context.Context, engine pdf.PDFEngine,
 // state. Document-wide layout, table merge/replace, cross-page figures, and
 // metrics aggregation happen here so page workers never mutate shared state.
 // pageResults are expected to be sorted by page number.
-func (p *Parser) assembleDocument(ctx context.Context, pages []int, pageResults []*pageResult) (*pdf.ParseResult, error) {
+func (p *Parser) assembleDocument(ctx context.Context, pages []int, pageResults []*pageResult, outlines []pdf.Outline) (*pdf.ParseResult, error) {
 	result := &pdf.ParseResult{
 		PageHeight: make(map[int]float64),
 		PageWidth:  make(map[int]float64),
+		Outlines:   outlines,
 	}
 
 	var boxes []pdf.TextBox
@@ -474,8 +475,11 @@ func (p *Parser) assembleDocument(ctx context.Context, pages []int, pageResults 
 		return result, nil
 	}
 
+	// A TOC is a document prefix, so the box-shape signal is only meaningful
+	// when this parse covers the document's first page.
+	coversDocumentStart := len(pages) > 0 && pages[0] == 0
 	if err := p.buildLayout(ctx, result, boxes, pageChars,
-		medianHeights, medianWidths, pageEnglish); err != nil {
+		medianHeights, medianWidths, pageEnglish, coversDocumentStart); err != nil {
 		return nil, fmt.Errorf("buildLayout: %w", err)
 	}
 	return result, nil
@@ -485,15 +489,76 @@ func (p *Parser) assembleDocument(ctx context.Context, pages []int, pageResults 
 // the global layout/table/figure pipeline. It is the only step that runs
 // AssignColumn, TextMerge, FinalReadingOrderMerge, NaiveVerticalMerge, table
 // merge, figure consolidation, BoxesToSections, and caption merge.
+//
+// coversDocumentStart reports whether `pages` started at the document's first
+// page, which is what the TOC box-shape signal requires (see RemoveTOCBoxes).
 func (p *Parser) buildLayout(ctx context.Context,
 	result *pdf.ParseResult,
 	boxes []pdf.TextBox, pageChars map[int][]pdf.TextChar,
 	medianHeights, medianWidths map[int]float64,
 	pageEnglish map[int]bool,
+	coversDocumentStart bool,
 ) error {
 	result.Metrics.BoxesInitial = len(boxes)
 
+	// Assign columns BEFORE dedup so DedupSubstringOverlaps can tell a real
+	// OCR double-detection fragment (same column as its container) apart from
+	// an independent short line in a DIFFERENT column whose text merely
+	// happens to be a substring of a wide cross-gutter OCR box. Without the
+	// column tag, double-column pages (e.g. 1例3个月) lose left-column lines
+	// to the substring collapse. AssignColumn only reads box geometry, so it
+	// is safe before any text merge.
 	boxes = lyt.AssignColumn(boxes)
+
+	// Collapse OCR duplicates BEFORE any merge step: overlapping same-text /
+	// substring boxes must be dropped while still independent, otherwise
+	// TextMerge/NaiveVerticalMerge concatenate them into duplicated text. The
+	// same-column guard above keeps cross-column lines intact.
+	boxes = lyt.DedupIdenticalText(boxes)
+	boxes = lyt.DedupSubstringOverlaps(boxes)
+
+	// Drop single-character ASCII boxes that repeat verbatim many times on
+	// the SAME page — these are the rotated watermark glyphs from
+	// templated PDFs (issue #18145). Post-process placement so the same
+	// signal covers both the char-path (passed through CharsToBoxes) and
+	// the OCR-merge path (passed through ocrMergeChars); a layout-stage
+	// filter would have only caught the former.
+	boxes = lyt.FilterWatermarkBoxes(boxes)
+
+	// Page-level content removal on intact box geometry. These MUST run before
+	// TextMerge: RemoveTOCBoxes relies on leader-dot boxes (which TextMerge
+	// folds into adjacent text) and RemoveHeaderFooterBoxes relies on header
+	// boxes that TextMerge would otherwise merge into the first body section.
+	//
+	// Header/footer removal runs FIRST because its evidence is cross-page: it
+	// counts how many of the document's pages carry the same margin text, while
+	// TOC removal deletes whole pages. Running the TOC pass first would take
+	// that margin text off the pages it deletes, dropping the count below the
+	// half-the-pages bar, so a document with both options on would keep a
+	// running header that either option removes on its own.
+	//
+	// The TOC pass is nearly indifferent to the order. It decides on page shapes
+	// and absolute bookmark numbers, and the only boxes header/footer removal
+	// takes from a TOC page are margin boxes, which never carried an entry
+	// marker. They do count towards tocMinShortBoxes, so a TOC page sitting
+	// exactly on that threshold can fall below it and be kept — a missed TOC
+	// page, which is the direction this detector errs in regardless.
+	//
+	// coversDocumentStart gates the TOC box-shape signal: a TOC is a document
+	// prefix, so a parse restricted to a later page range must not read its own
+	// first page as one. The outline signal uses absolute page numbers and needs
+	// no such gate.
+	boxesBefore := len(boxes)
+	if p.Config.RemoveHeaderFooter {
+		boxes = lyt.RemoveHeaderFooterBoxes(boxes, result.PageHeight)
+		result.Metrics.BoxesHeaderFooterRemoved = boxesBefore - len(boxes)
+		boxesBefore = len(boxes)
+	}
+	if p.Config.RemoveTOC {
+		boxes = lyt.RemoveTOCBoxes(boxes, lyt.TOCPageRangeFromOutlines(result.Outlines), coversDocumentStart)
+		result.Metrics.BoxesTOCRemoved = boxesBefore - len(boxes)
+	}
+
 	boxes = lyt.TextMerge(boxes, medianHeights)
 	result.Metrics.BoxesTextMerge = len(boxes)
 
@@ -508,7 +573,7 @@ func (p *Parser) buildLayout(ctx context.Context,
 	}
 
 	if len(result.Tables) > 0 {
-		result.Tables = tbl.MergeTablesAcrossPages(result.Tables, nil)
+		result.Tables = tbl.MergeTablesAcrossPages(result.Tables, medianHeights, result.PageHeight)
 	}
 
 	boxes = tbl.ExtractTableAndReplace(boxes, result.Tables)
@@ -530,10 +595,15 @@ func (p *Parser) processPages(ctx context.Context, engine pdf.PDFEngine, docAnal
 	if err != nil {
 		return nil, fmt.Errorf("page count: %w", err)
 	}
+	// The outlines are read before the layout is built: buildLayout uses them to
+	// select TOC pages on the intact box geometry (see Parser.buildLayout), so
+	// they cannot be attached to the result afterwards.
+	outlines := p.extractOutlines(engine)
 	if pageCount == 0 {
 		return &pdf.ParseResult{
 			PageHeight: make(map[int]float64),
 			PageWidth:  make(map[int]float64),
+			Outlines:   outlines,
 		}, nil
 	}
 
@@ -553,7 +623,7 @@ func (p *Parser) processPages(ctx context.Context, engine pdf.PDFEngine, docAnal
 		slog.Warn("runPageWorkers: some pages failed", "err", pageErr)
 	}
 
-	result, err := p.assembleDocument(ctx, pages, pageResults)
+	result, err := p.assembleDocument(ctx, pages, pageResults, outlines)
 	if err != nil {
 		return nil, err
 	}

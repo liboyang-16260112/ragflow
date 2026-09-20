@@ -33,6 +33,24 @@ type AuthHandler struct {
 	userService userTokenResolver
 }
 
+// ResolveMCPUser applies the same API-key/JWT resolution used by the public
+// MCP route, for the standalone native MCP transport.
+func (h *AuthHandler) ResolveMCPUser(ctx context.Context, authorization string) (*entity.User, error) {
+	if authorization == "" {
+		return nil, fmt.Errorf("missing authorization header")
+	}
+	if u, code, err := h.userService.GetUserByToken(ctx, authorization); err == nil && code == common.CodeSuccess {
+		return u, nil
+	}
+	if u, code, err := h.userService.GetUserByAPIToken(ctx, authorization); err == nil && code == common.CodeSuccess {
+		return u, nil
+	}
+	if u, code, err := h.userService.GetUserByBetaAPIToken(ctx, authorization); err == nil && code == common.CodeSuccess {
+		return u, nil
+	}
+	return nil, fmt.Errorf("invalid authorization")
+}
+
 // userTokenResolver is the subset of UserService the auth
 // middleware actually depends on. We keep it as a small interface
 // so the test suite can swap in a stub without spinning up the
@@ -60,7 +78,7 @@ func NewAuthHandler() *AuthHandler {
 //  1. Beta API token         → GetUserByBetaAPIToken
 //  2. JWT (regular session) → existing UserService.GetUserByToken
 //  3. API token              → GetUserByAPIToken
-//  4. Fall through           → 401
+//  4. Fall through           → code 102 "Authorization is not valid!"
 //
 // IMPORTANT: the regular-user branch is NOT gated on a "Bearer "
 // prefix. UserService.GetUserByToken accepts the raw Authorization
@@ -79,7 +97,9 @@ func (h *AuthHandler) BetaAuthMiddleware() gin.HandlerFunc {
 		}
 
 		if auth == "" {
-			common.ResponseWithCodeData(c, common.CodeUnauthorized, nil, "Authorization required")
+			// Mirror Python's login_required(auth_types=AUTH_BETA): any auth
+			// failure on beta endpoints is a business error, not an HTTP 401.
+			common.ResponseWithCodeData(c, common.CodeDataError, nil, "Authorization is not valid!")
 			c.Abort()
 			return
 		}
@@ -105,7 +125,8 @@ func (h *AuthHandler) BetaAuthMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		common.ResponseWithCodeData(c, common.CodeUnauthorized, nil, "Invalid auth credentials")
+		// Mirror Python's login_required(auth_types=AUTH_BETA).
+		common.ResponseWithCodeData(c, common.CodeDataError, nil, "Authorization is not valid!")
 		c.Abort()
 	}
 }

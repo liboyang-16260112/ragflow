@@ -31,6 +31,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
+	"unicode/utf8"
 
 	infinity "github.com/infiniflow/infinity-go-sdk"
 	"go.uber.org/zap"
@@ -50,7 +52,7 @@ var pagerankAdjustLocks [pagerankAdjustLockCount]sync.Mutex
 // baseName is the table name prefix (e.g., "ragflow_<tenant_id>")
 // The full table name is built as "{baseName}_{datasetID}"
 // For skill index (datasetID="skill"), tableName is just baseName and uses skill_infinity_mapping.json
-func (e *infinityEngine) CreateChunkStore(ctx context.Context, baseName, datasetID string, vectorSize int, parserID string) error {
+func (e *Engine) CreateChunkStore(ctx context.Context, baseName, datasetID string, vectorSize int, parserID string) error {
 	db, release, err := e.client.checkoutDatabase(ctx, "chunk.go")
 	if err != nil {
 		return fmt.Errorf("failed to get database: %w", err)
@@ -60,7 +62,7 @@ func (e *infinityEngine) CreateChunkStore(ctx context.Context, baseName, dataset
 	return e.createChunkStoreWithDB(db, baseName, datasetID, vectorSize, parserID)
 }
 
-func (e *infinityEngine) createChunkStoreWithDB(db *infinity.Database, baseName, datasetID string, vectorSize int, parserID string) error {
+func (e *Engine) createChunkStoreWithDB(db *infinity.Database, baseName, datasetID string, vectorSize int, parserID string) error {
 	vecSize := vectorSize
 
 	// Determine table name and mapping file based on index type
@@ -268,13 +270,13 @@ func (e *infinityEngine) createChunkStoreWithDB(db *infinity.Database, baseName,
 // Table name format: {baseName}_{datasetID}
 // Auto-create the table if it doesn't exist
 // Delete existing rows with matching IDs before insert
-func (e *infinityEngine) InsertChunks(ctx context.Context, chunks []map[string]interface{}, baseName string, datasetID string) ([]string, error) {
+func (e *Engine) InsertChunks(ctx context.Context, chunks []map[string]interface{}, baseName string, datasetID string) ([]string, error) {
 	tableName := buildChunkTableName(baseName, datasetID)
 	common.Info("InfinityConnection.InsertChunks called", zap.String("tableName", tableName), zap.Int("chunkCount", len(chunks)))
 
 	db, release, err := e.client.checkoutDatabase(ctx, "chunk.go")
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get database: %w", err)
+		return nil, fmt.Errorf("failed to get database: %w", err)
 	}
 	defer release()
 
@@ -283,7 +285,7 @@ func (e *infinityEngine) InsertChunks(ctx context.Context, chunks []map[string]i
 		// Table doesn't exist, try to create it
 		errMsg := strings.ToLower(err.Error())
 		if !strings.Contains(errMsg, "not found") && !strings.Contains(errMsg, "doesn't exist") {
-			return nil, fmt.Errorf("Failed to get table %s: %w", tableName, err)
+			return nil, fmt.Errorf("failed to get table %s: %w", tableName, err)
 		}
 
 		// Infer vector size from chunks
@@ -313,12 +315,12 @@ func (e *infinityEngine) InsertChunks(ctx context.Context, chunks []map[string]i
 
 		// Create table
 		if err := e.createChunkStoreWithDB(db, baseName, datasetID, vectorSize, parserID); err != nil {
-			return nil, fmt.Errorf("Failed to create table: %w", err)
+			return nil, fmt.Errorf("failed to create table: %w", err)
 		}
 
 		table, err = db.GetTable(tableName)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to get table after creation: %w", err)
+			return nil, fmt.Errorf("failed to get table after creation: %w", err)
 		}
 	}
 
@@ -326,7 +328,7 @@ func (e *infinityEngine) InsertChunks(ctx context.Context, chunks []map[string]i
 	var embeddingCols [][2]interface{}
 	colsResp, err := table.ShowColumns()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get columns: %w", err)
+		return nil, fmt.Errorf("failed to get columns: %w", err)
 	}
 	result, ok := colsResp.(*infinity.QueryResult)
 	if !ok {
@@ -353,6 +355,10 @@ func (e *infinityEngine) InsertChunks(ctx context.Context, chunks []map[string]i
 	insertChunks := make([]map[string]interface{}, len(chunks))
 	for i, chunk := range chunks {
 		insertChunks[i] = transformChunkFields(chunk, embeddingCols)
+		// kb_id is owned by the engine at the write boundary (mirrors ES
+		// chunk.go InsertChunks). The ingestion producer no longer stamps it,
+		// so the producer value (if any) is intentionally overridden here.
+		insertChunks[i]["kb_id"] = datasetID
 	}
 
 	// Delete existing rows with matching IDs
@@ -379,28 +385,34 @@ func (e *infinityEngine) InsertChunks(ctx context.Context, chunks []map[string]i
 	// Insert chunks to dataset
 	_, err = table.Insert(insertChunks)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to insert chunks to dataset: %w", err)
+		return nil, fmt.Errorf("failed to insert chunks to dataset: %w", err)
 	}
 
 	common.Info("InfinityConnection.InsertChunks result", zap.String("tableName", tableName), zap.Int("count", len(insertChunks)))
 	return []string{}, nil
 }
 
-// UpdateChunks updates chunks in a dataset table
+// UpdateChunks updates chunks in a dataset
 // Table name format: {baseName}_{datasetID}
-func (e *infinityEngine) UpdateChunks(ctx context.Context, condition map[string]interface{}, newValue map[string]interface{}, baseName string, datasetID string) error {
+func (e *Engine) UpdateChunks(ctx context.Context, condition map[string]interface{}, newValue map[string]interface{}, baseName string, datasetID string) error {
 	tableName := buildChunkTableName(baseName, datasetID)
 	common.Info("InfinityConnection.UpdateChunks called", zap.String("tableName", tableName), zap.Any("condition", condition))
 
 	db, release, err := e.client.checkoutDatabase(ctx, "chunk.go")
 	if err != nil {
-		return fmt.Errorf("Failed to get database: %w", err)
+		return fmt.Errorf("failed to get database: %w", err)
 	}
 	defer release()
 
 	table, err := db.GetTable(tableName)
 	if err != nil {
-		return fmt.Errorf("Failed to get table %s: %w", tableName, err)
+		// Tolerate missing table (mirrors Python's docStoreConn which
+		// silently returns False on a non-existent table).
+		errMsg := strings.ToLower(err.Error())
+		if strings.Contains(errMsg, "not found") || strings.Contains(errMsg, "doesn't exist") {
+			return nil
+		}
+		return fmt.Errorf("failed to get table %s: %w", tableName, err)
 	}
 
 	// Get table columns
@@ -410,7 +422,7 @@ func (e *infinityEngine) UpdateChunks(ctx context.Context, condition map[string]
 	})
 	colsResp, err := table.ShowColumns()
 	if err != nil {
-		return fmt.Errorf("Failed to get columns: %w", err)
+		return fmt.Errorf("failed to get columns: %w", err)
 	}
 	result, ok := colsResp.(*infinity.QueryResult)
 	if ok {
@@ -436,6 +448,12 @@ func (e *infinityEngine) UpdateChunks(ctx context.Context, condition map[string]
 
 	// Build filter string from condition
 	filter := buildFilterFromCondition(condition, clmns)
+	if len(condition) > 0 && (filter == "" || filter == "1=1") {
+		// Every condition key was dropped (blank value, empty list, unknown
+		// column). table.Update("1=1", ...) would rewrite every row of the
+		// dataset, so refuse instead — mirrors DeleteChunks/DeleteMetadata.
+		return fmt.Errorf("INFINITY update aborted: non-empty condition yielded unconstrained filter on table %s", tableName)
+	}
 
 	// Process remove operation first
 	removeValue := make(map[string]interface{})
@@ -528,7 +546,7 @@ func (e *infinityEngine) UpdateChunks(ctx context.Context, condition map[string]
 	common.Info(fmt.Sprintf("INFINITY update: table=%s, filter=%s, newValue=%v", tableName, filter, newValue))
 	_, err = table.Update(filter, newValue)
 	if err != nil {
-		return fmt.Errorf("Failed to update chunks: %w", err)
+		return fmt.Errorf("failed to update chunks: %w", err)
 	}
 
 	common.Info("InfinityConnection.UpdateChunks completes", zap.String("tableName", tableName))
@@ -536,18 +554,15 @@ func (e *infinityEngine) UpdateChunks(ctx context.Context, condition map[string]
 }
 
 // AdjustChunkPagerank adjusts pagerank_fea and clamps it to [minWeight, maxWeight].
-func (e *infinityEngine) AdjustChunkPagerank(ctx context.Context, baseName, chunkID, datasetID string, delta, minWeight, maxWeight float64) error {
+func (e *Engine) AdjustChunkPagerank(ctx context.Context, baseName, chunkID, datasetID string, delta, minWeight, maxWeight float64) error {
 	if baseName == "" {
 		return fmt.Errorf("index name cannot be empty")
 	}
 	if chunkID == "" {
 		return fmt.Errorf("chunk id cannot be empty")
 	}
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	if e.client == nil || e.client.pool == nil {
-		return fmt.Errorf("Infinity client not initialized")
+		return fmt.Errorf("infinity client not initialized")
 	}
 
 	tableName := buildChunkTableName(baseName, datasetID)
@@ -630,7 +645,7 @@ func (e *infinityEngine) AdjustChunkPagerank(ctx context.Context, baseName, chun
 // DeleteChunks deletes chunks from a dataset table
 // Table name format: {baseName}_{datasetID}
 // condition specifies which chunks to delete
-func (e *infinityEngine) DeleteChunks(ctx context.Context, condition map[string]interface{}, baseName string, datasetID string) (int64, error) {
+func (e *Engine) DeleteChunks(ctx context.Context, condition map[string]interface{}, baseName string, datasetID string) (int64, error) {
 	tableName := buildChunkTableName(baseName, datasetID)
 
 	db, release, err := e.client.checkoutDatabase(ctx, "chunk.go")
@@ -679,6 +694,10 @@ func (e *infinityEngine) DeleteChunks(ctx context.Context, condition map[string]
 	// Build filter from condition
 	filter := buildFilterFromCondition(condition, clmns)
 
+	if len(condition) > 0 && (filter == "" || filter == "1=1") {
+		return 0, fmt.Errorf("INFINITY delete aborted: non-empty condition yielded unconstrained filter on table %s", tableName)
+	}
+
 	delResp, err := table.Delete(filter)
 	if err != nil {
 		return 0, fmt.Errorf("failed to delete: %w", err)
@@ -690,7 +709,7 @@ func (e *infinityEngine) DeleteChunks(ctx context.Context, condition map[string]
 // Search searches the Infinity engine for matching chunks.
 // It supports three matching types: MatchTextExpr (full-text), MatchDenseExpr (vector), and FusionExpr (combined).
 // If no match expressions are provided, Search relies solely on filter (e.g., doc_id, available_int) to find results.
-func (e *infinityEngine) Search(ctx context.Context, req *types.SearchRequest) (*types.SearchResult, error) {
+func (e *Engine) Search(ctx context.Context, req *types.SearchRequest) (*types.SearchResult, error) {
 	types.LogSearchRequest("Infinity", req)
 
 	if len(req.IndexNames) == 0 {
@@ -966,7 +985,7 @@ func (e *infinityEngine) Search(ctx context.Context, req *types.SearchRequest) (
 			// Add text match if question is provided
 			if hasTextMatch {
 				extraOptions := map[string]string{
-					"minimum_should_match": fmt.Sprintf("%d%%", int(minMatch*100)),
+					"minimum_should_match": common.FormatMinimumShouldMatchPercent(minMatch),
 				}
 
 				if filterStr != "" {
@@ -1206,9 +1225,9 @@ func (e *infinityEngine) Search(ctx context.Context, req *types.SearchRequest) (
 }
 
 // GetChunk gets a chunk by ID
-func (e *infinityEngine) GetChunk(ctx context.Context, tableName, chunkID string, datasetIDs []string) (interface{}, error) {
+func (e *Engine) GetChunk(ctx context.Context, tableName, chunkID string, datasetIDs []string) (interface{}, error) {
 	if e.client == nil || e.client.pool == nil {
-		return nil, fmt.Errorf("Infinity client not initialized")
+		return nil, fmt.Errorf("infinity client not initialized")
 	}
 
 	common.Info("Infinity get chunk start",
@@ -1472,7 +1491,7 @@ func memoryMessageStatusBool(value interface{}) bool {
 }
 
 // GetFields extracts the requested fields from Infinity search results
-func (e *infinityEngine) GetFields(chunks []map[string]interface{}, fields []string) map[string]map[string]interface{} {
+func (e *Engine) GetFields(chunks []map[string]interface{}, fields []string) map[string]map[string]interface{} {
 	result := make(map[string]map[string]interface{})
 
 	// Python: if not fields, return {}
@@ -1773,7 +1792,7 @@ func (e *infinityEngine) GetFields(chunks []map[string]interface{}, fields []str
 //
 // For tag_kwd field, splits values by "###" separator.
 // For other fields, uses comma separation.
-func (e *infinityEngine) GetAggregation(chunks []map[string]interface{}, fieldName string) []map[string]interface{} {
+func (e *Engine) GetAggregation(chunks []map[string]interface{}, fieldName string) []map[string]interface{} {
 	if len(chunks) == 0 {
 		return []map[string]interface{}{}
 	}
@@ -1807,7 +1826,7 @@ func (e *infinityEngine) GetAggregation(chunks []map[string]interface{}, fieldNa
 			var tags []string
 			// Split by "###" for tag_kwd field
 			if fieldName == "tag_kwd" && strings.Contains(valueStr, "###") {
-				for _, tag := range strings.Split(valueStr, "###") {
+				for tag := range strings.SplitSeq(valueStr, "###") {
 					tag = strings.TrimSpace(tag)
 					if tag != "" {
 						tags = append(tags, tag)
@@ -1815,7 +1834,7 @@ func (e *infinityEngine) GetAggregation(chunks []map[string]interface{}, fieldNa
 				}
 			} else {
 				// Fallback to comma separation
-				for _, tag := range strings.Split(valueStr, ",") {
+				for tag := range strings.SplitSeq(valueStr, ",") {
 					tag = strings.TrimSpace(tag)
 					if tag != "" {
 						tags = append(tags, tag)
@@ -1869,7 +1888,7 @@ func (e *infinityEngine) GetAggregation(chunks []map[string]interface{}, fieldNa
 }
 
 // GetChunkIDs extracts chunk IDs from Infinity search results.
-func (e *infinityEngine) GetChunkIDs(chunks []map[string]interface{}) []string {
+func (e *Engine) GetChunkIDs(chunks []map[string]interface{}) []string {
 	ids := make([]string, 0, len(chunks))
 	for _, chunk := range chunks {
 		if id, ok := chunk["id"].(string); ok {
@@ -1879,23 +1898,79 @@ func (e *infinityEngine) GetChunkIDs(chunks []map[string]interface{}) []string {
 	return ids
 }
 
-// GetHighlight generates highlighted text snippets for search results.
+// GetHighlight returns highlighted text for search results.
 // Matches keywords in text and wraps them with <em> tags.
-func (e *infinityEngine) GetHighlight(chunks []map[string]interface{}, keywords []string, fieldName string) map[string]string {
+func (e *Engine) GetHighlight(chunks []map[string]interface{}, keywords []string, fieldName string) map[string]string {
 	result := make(map[string]string)
-	if len(chunks) == 0 || len(keywords) == 0 {
-		return result
+	if fieldName == "content_with_weight" && !hasInfinityHighlightField(chunks, fieldName) {
+		fieldName = "content"
 	}
+	pattern := compileInfinityHighlightPattern(keywords)
 
-	// For Infinity, scores are already returned in search results (_score column)
-	// So GetScores just extracts scores from chunks, mimicking Python's approach
+	for _, chunk := range chunks {
+		id, ok := chunk["id"].(string)
+		if !ok || id == "" {
+			continue
+		}
+		txt, ok := chunk[fieldName].(string)
+		if !ok {
+			continue
+		}
+		if pattern != nil {
+			txt = pattern.ReplaceAllStringFunc(txt, func(match string) string {
+				return "<em>" + match + "</em>"
+			})
+		}
+		result[id] = txt
+	}
 	return result
+}
+
+func hasInfinityHighlightField(chunks []map[string]interface{}, fieldName string) bool {
+	for _, chunk := range chunks {
+		if _, ok := chunk[fieldName]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+func compileInfinityHighlightPattern(keywords []string) *regexp.Regexp {
+	nonEmpty := make([]string, 0, len(keywords))
+	for _, keyword := range keywords {
+		if keyword != "" {
+			nonEmpty = append(nonEmpty, keyword)
+		}
+	}
+	if len(nonEmpty) == 0 {
+		return nil
+	}
+	sort.SliceStable(nonEmpty, func(i, j int) bool {
+		return utf8.RuneCountInString(nonEmpty[i]) > utf8.RuneCountInString(nonEmpty[j])
+	})
+	parts := make([]string, len(nonEmpty))
+	for i, keyword := range nonEmpty {
+		parts[i] = regexp.QuoteMeta(keyword)
+		if isLatinKeyword(keyword) {
+			parts[i] += `\p{Latin}*`
+		}
+	}
+	return regexp.MustCompile("(?i)" + strings.Join(parts, "|"))
+}
+
+func isLatinKeyword(keyword string) bool {
+	for _, r := range keyword {
+		if !unicode.In(r, unicode.Latin) {
+			return false
+		}
+	}
+	return keyword != ""
 }
 
 // KNNScores for Infinity - since Infinity normalizes scores during fusion,
 // we just need to return a result structure that GetScores can parse.
 // This matches Python's approach where Infinity doesn't use the two-pass KNN.
-func (e *infinityEngine) KNNScores(ctx context.Context, chunks []map[string]interface{}, queryVector []float64, topK int) (map[string]interface{}, error) {
+func (e *Engine) KNNScores(ctx context.Context, chunks []map[string]interface{}, queryVector []float64, topK int) (map[string]interface{}, error) {
 	if len(chunks) == 0 {
 		return nil, nil
 	}
@@ -1921,7 +1996,7 @@ func (e *infinityEngine) KNNScores(ctx context.Context, chunks []map[string]inte
 
 // GetScores extracts similarity scores from KNN search result.
 // For Infinity, it parses the result from KNNScores and extracts _score values.
-func (e *infinityEngine) GetScores(knnResult map[string]interface{}) map[string]float64 {
+func (e *Engine) GetScores(knnResult map[string]interface{}) map[string]float64 {
 	scores := make(map[string]float64)
 	hits, ok := knnResult["hits"].(map[string]interface{})
 	if !ok {
@@ -2354,6 +2429,107 @@ func getChunkScore(chunk map[string]interface{}) float64 {
 	return 0.0
 }
 
+// numericValue reports whether v is a number the hex encoder accepts.
+func numericValue(v interface{}) (interface{}, bool) {
+	switch n := v.(type) {
+	case int, int64, float64:
+		return n, true
+	}
+	return nil, false
+}
+
+// numericRow appends one flat row of numbers: a JSON-decoded []interface{}, or
+// the Go-typed []int / []int64 / []float64 a chunk built in process carries.
+func numericRow(row interface{}, out *[]interface{}) bool {
+	if vals, ok := row.([]interface{}); ok {
+		for _, item := range vals {
+			n, isNum := numericValue(item)
+			if !isNum {
+				return false
+			}
+			*out = append(*out, n)
+		}
+		return true
+	}
+	switch vals := row.(type) {
+	case []int:
+		for _, n := range vals {
+			*out = append(*out, n)
+		}
+	case []int64:
+		for _, n := range vals {
+			*out = append(*out, n)
+		}
+	case []float64:
+		for _, n := range vals {
+			*out = append(*out, n)
+		}
+	default:
+		return false
+	}
+	return true
+}
+
+// numericSlice flattens a numeric slice — or a slice of numeric slices — into the
+// flat []interface{} the hex encoder takes. Two shapes reach the engine: values
+// decoded from JSON arrive as []interface{} (numbers as float64), while a chunk
+// built IN PROCESS carries Go's typed slices (the ingestion pipeline's
+// AddPositions emits []int / [][]int). Both must be encoded, because these
+// columns are VARCHAR holding the hex form: handing Infinity the typed slice
+// makes it try to store an int64 tensor and fail with
+// "Not support to convert Tensor(int64,5) to Varchar" (InfinityException 3049).
+// A scalar or a non-numeric value reports ok=false, so the caller keeps its
+// pass-through instead of hex-encoding something it cannot parse back.
+func numericSlice(v interface{}) ([]interface{}, bool) {
+	out := make([]interface{}, 0, 5)
+	switch vals := v.(type) {
+	case []interface{}:
+		// JSON shape: plain numbers, and/or position rows that are slices too.
+		for _, item := range vals {
+			if n, ok := numericValue(item); ok {
+				out = append(out, n)
+				continue
+			}
+			if !numericRow(item, &out) {
+				return nil, false
+			}
+		}
+	case []int:
+		for _, n := range vals {
+			out = append(out, n)
+		}
+	case []int64:
+		for _, n := range vals {
+			out = append(out, n)
+		}
+	case []float64:
+		for _, n := range vals {
+			out = append(out, n)
+		}
+	case [][]int:
+		for _, row := range vals {
+			if !numericRow(row, &out) {
+				return nil, false
+			}
+		}
+	case [][]int64:
+		for _, row := range vals {
+			if !numericRow(row, &out) {
+				return nil, false
+			}
+		}
+	case [][]float64:
+		for _, row := range vals {
+			if !numericRow(row, &out) {
+				return nil, false
+			}
+		}
+	default:
+		return nil, false
+	}
+	return out, true
+}
+
 // transformChunkFields converts chunk field names to Infinity format.
 // Converts internal field names (like docnm_kwd) to Infinity column names (docnm).
 // Also handles:
@@ -2379,23 +2555,23 @@ func transformChunkFields(chunk map[string]interface{}, embeddingCols [][2]inter
 				d["docnm"] = utility.ConvertToString(v)
 			}
 		case "important_kwd":
-			if list, ok := v.([]interface{}); ok {
-				emptyCount := 0
-				tokens := make([]string, 0)
-				for _, item := range list {
-					if str, ok := item.(string); ok {
-						if str == "" {
-							emptyCount++
-						} else {
-							tokens = append(tokens, str)
-						}
-					}
+			// Python: list2str(tokens, ",") plus the count of the empty entries
+			// (infinity_conn.py:528-535). The extractor and the tokenizer hand
+			// over a Go-NATIVE []string, which the old []interface{}-only branch
+			// fed to ConvertToString — writing "[a b]" into important_keywords
+			// and leaving important_kwd_empty_count unset.
+			parts := utility.ConvertToStringSlice(v)
+			tokens := make([]string, 0, len(parts))
+			emptyCount := 0
+			for _, str := range parts {
+				if str == "" {
+					emptyCount++
+					continue
 				}
-				d["important_keywords"] = strings.Join(tokens, ",")
-				d["important_kwd_empty_count"] = emptyCount
-			} else {
-				d["important_keywords"] = utility.ConvertToString(v)
+				tokens = append(tokens, str)
 			}
+			d["important_keywords"] = strings.Join(tokens, ",")
+			d["important_kwd_empty_count"] = emptyCount
 		case "important_tks":
 			if _, exists := chunk["important_kwd"]; !exists {
 				d["important_keywords"] = v
@@ -2448,15 +2624,15 @@ func transformChunkFields(chunk map[string]interface{}, embeddingCols [][2]inter
 				// 3. Otherwise assign v directly
 				d["kb_id"] = v
 			}
-		case "position_int":
-			if list, ok := v.([]interface{}); ok {
-				d["position_int"] = utility.ConvertPositionIntArrayToHex(list)
-			} else {
-				d["position_int"] = v
-			}
-		case "page_num_int", "top_int":
-			if list, ok := v.([]interface{}); ok {
-				d[k] = utility.ConvertIntArrayToHex(list)
+		case "position_int", "page_num_int", "top_int":
+			// Python flattens the position rows and hex-encodes every number
+			// (infinity_conn.py: `[num for row in v for num in row]`, "%08x").
+			// The input may be Go-NATIVE: the ingestion pipeline's AddPositions
+			// emits []int / [][]int, and those used to miss the
+			// []interface{}-only branch and reach Infinity as a raw tensor
+			// ("Not support to convert Tensor(int64,5) to Varchar", 3049).
+			if nums, ok := numericSlice(v); ok {
+				d[k] = utility.ConvertIntArrayToHex(nums)
 			} else {
 				d[k] = v
 			}
@@ -2507,11 +2683,11 @@ func transformChunkFields(chunk map[string]interface{}, embeddingCols [][2]inter
 }
 
 // DropChunkStore drops a chunk table from Infinity
-func (e *infinityEngine) DropChunkStore(ctx context.Context, baseName, datasetID string) error {
+func (e *Engine) DropChunkStore(ctx context.Context, baseName, datasetID string) error {
 	return e.dropTable(ctx, buildChunkTableName(baseName, datasetID))
 }
 
 // ChunkStoreExists checks if a chunk table exists in Infinity
-func (e *infinityEngine) ChunkStoreExists(ctx context.Context, baseName, datasetID string) (bool, error) {
+func (e *Engine) ChunkStoreExists(ctx context.Context, baseName, datasetID string) (bool, error) {
 	return e.tableExists(ctx, buildChunkTableName(baseName, datasetID))
 }

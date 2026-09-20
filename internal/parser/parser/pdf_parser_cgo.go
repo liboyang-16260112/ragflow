@@ -34,16 +34,15 @@ func (p *PDFParser) ParseWithResult(ctx context.Context, filename string, data [
 		return parsePDFWithTCADP(filename, data, p)
 	}
 	cfg := deepdoctype.DefaultParserConfig()
-	cfg.SkipOCR = false
 	cfg.Pages = p.Pages
+	cfg.RemoveTOC = p.RemoveTOC
+	cfg.RemoveHeaderFooter = p.RemoveHeaderFooter
 	parser := deepdocpdf.NewParser(cfg)
 	res := parsePDFWithDeepDocOptions(ctx, filename, data, pdfPostProcessOptions{
 		outputFormat:       p.OutputFormat,
 		zoom:               cfg.Zoom,
 		enableMultiColumn:  p.EnableMultiColumn,
 		flattenMediaToText: p.FlattenMediaToText,
-		removeTOC:          p.RemoveTOC,
-		removeHeaderFooter: p.RemoveHeaderFooter,
 	}, parser.Parse)
 	if res.Err != nil && errors.Is(res.Err, deepdocpdf.ErrNoPDFData) {
 		return ParseResult{Err: fmt.Errorf("%w: %s", ErrPDFEngineUnavailable, filename)}

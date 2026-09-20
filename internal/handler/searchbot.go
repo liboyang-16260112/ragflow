@@ -34,9 +34,11 @@ import (
 
 // SearchBotAskRequest is the request body for POST /api/v1/searchbots/ask.
 type SearchBotAskRequest struct {
-	Question string             `json:"question" binding:"required"`
-	KbIDs    common.StringSlice `json:"kb_ids" binding:"required"`
-	SearchID string             `json:"search_id,omitempty"`
+	Query    string                   `json:"query,omitempty"`
+	Messages []map[string]interface{} `json:"messages,omitempty"`
+	Question string                   `json:"question"`
+	KbIDs    common.StringSlice       `json:"kb_ids" binding:"required"`
+	SearchID string                   `json:"search_id,omitempty"`
 }
 
 // SearchBotMindMapRequest is the request body for POST /api/v1/searchbots/mindmap.
@@ -52,6 +54,7 @@ type SearchBotRetrievalTestRequest struct {
 	Question               string                 `json:"question" binding:"required"`
 	Page                   *int                   `json:"page,omitempty"`
 	Size                   *int                   `json:"size,omitempty"`
+	RerankCandidatesCount  *int                   `json:"rerank_candidates_count,omitempty"`
 	DocIDs                 []string               `json:"doc_ids,omitempty"`
 	UseKG                  *bool                  `json:"use_kg,omitempty"`
 	TopK                   *int                   `json:"top_k,omitempty"`
@@ -89,8 +92,10 @@ func (r *SearchBotRetrievalTestRequest) UnmarshalJSON(data []byte) error {
 }
 
 // SearchBotRequest is the request body for POST /api/v1/searchbots/related_questions.
+// Question is validated manually below so the error message follows the
+// established API contract instead of the Gin validator format.
 type SearchBotRequest struct {
-	Question string `json:"question" binding:"required"`
+	Question string `json:"question"`
 	SearchID string `json:"search_id,omitempty"`
 }
 
@@ -152,7 +157,7 @@ func (h *SearchBotHandler) Handle(c *gin.Context) {
 	questions, err := service.GenerateRelatedQuestions(ctx, user.ID, req.Question, req.SearchID, h.searchSvc, h.tenantSvc, h.llm)
 	if err != nil {
 		common.Warn("searchbot related questions failed", zap.String("error", err.Error()))
-		common.ResponseWithCodeData(c, common.CodeOperatingError, nil, "LLM call failed")
+		common.ResponseWithCodeData(c, common.CodeOperatingError, nil, err.Error())
 		return
 	}
 
@@ -205,7 +210,7 @@ func (h *SearchBotHandler) RetrievalTest(c *gin.Context) {
 	result, err := h.chunkSvc.RetrievalTest(ctx, svcReq, user.ID)
 	if err != nil {
 		common.Warn("search bot retrieval test failed", zap.String("error", err.Error()))
-		common.ResponseWithHttpCodeData(c, http.StatusInternalServerError, common.CodeServerError, nil, "retrieval test failed")
+		common.ResponseWithCodeData(c, common.CodeDataError, nil, err.Error())
 		return
 	}
 
@@ -234,6 +239,13 @@ func (h *SearchBotHandler) Ask(c *gin.Context) {
 		return
 	}
 
+	question, err := service.ResolveCompletionQuestion(req.Question, req.Query, req.Messages)
+	if err != nil {
+		common.ResponseWithHttpCodeData(c, http.StatusBadRequest, common.CodeArgumentError, nil, err.Error())
+		return
+	}
+	req.Question = question
+
 	// Filter empty kb_ids.
 	filtered := make(common.StringSlice, 0, len(req.KbIDs))
 	for _, id := range req.KbIDs {
@@ -250,7 +262,8 @@ func (h *SearchBotHandler) Ask(c *gin.Context) {
 	// Resolve chat model ID.
 	modelID := ""
 	if req.SearchID != "" && h.searchSvc != nil {
-		if detail, err := h.searchSvc.GetDetail(req.SearchID); err == nil {
+		ctx := c.Request.Context()
+		if detail, err := h.searchSvc.GetDetail(ctx, req.SearchID); err == nil {
 			if sc, ok := detail["search_config"].(map[string]interface{}); ok {
 				if cid, ok := sc["chat_id"].(string); ok && cid != "" {
 					modelID = cid
@@ -259,7 +272,8 @@ func (h *SearchBotHandler) Ask(c *gin.Context) {
 		}
 	}
 	if modelID == "" && h.tenantSvc != nil {
-		defaultModel, err := h.tenantSvc.GetDefaultModelName(user.ID, entity.ModelTypeChat)
+		ctx := c.Request.Context()
+		defaultModel, err := h.tenantSvc.GetDefaultModelName(ctx, user.ID, entity.ModelTypeChat)
 		if err == nil && defaultModel != "" {
 			modelID = defaultModel
 		}
@@ -269,7 +283,7 @@ func (h *SearchBotHandler) Ask(c *gin.Context) {
 		return
 	}
 
-	disableWriteDeadlineForSSE(c)
+	clearResponseWriteDeadline(c)
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
@@ -350,7 +364,8 @@ func (h *SearchBotHandler) MindMap(c *gin.Context) {
 			jsonInternalError(c, fmt.Errorf("search service not configured"))
 			return
 		}
-		detail, err := h.searchSvc.GetDetail(req.SearchID)
+		ctx := c.Request.Context()
+		detail, err := h.searchSvc.GetDetail(ctx, req.SearchID)
 		if err != nil {
 			jsonInternalError(c, err)
 			return
@@ -372,7 +387,7 @@ func (h *SearchBotHandler) MindMap(c *gin.Context) {
 	})
 	if err != nil {
 		common.Warn("searchbot mindmap failed", zap.String("error", err.Error()))
-		jsonInternalError(c, err)
+		common.ResponseWithCodeData(c, common.CodeOperatingError, nil, err.Error())
 		return
 	}
 	common.SuccessWithData(c, mindMap, "success")
@@ -395,8 +410,7 @@ func (h *SearchBotHandler) SearchBotDetail(c *gin.Context) {
 		common.ResponseWithCodeData(c, code, nil, "Authentication error: API key is invalid!")
 		return
 	}
-
-	detail, err := h.searchSvc.GetSearchShareDetail(user.ID, searchID)
+	detail, err := h.searchSvc.GetSearchShareDetail(ctx, user.ID, searchID)
 	if err != nil {
 		switch err.Error() {
 		case "has no permission for this operation":
@@ -505,6 +519,7 @@ func toRetrievalServiceRequest(h *SearchBotRetrievalTestRequest) *service.Retrie
 		Question:               h.Question,
 		Page:                   h.Page,
 		Size:                   h.Size,
+		RerankCandidatesCount:  h.RerankCandidatesCount,
 		DocIDs:                 h.DocIDs,
 		UseKG:                  h.UseKG,
 		TopK:                   h.TopK,

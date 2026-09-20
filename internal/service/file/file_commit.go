@@ -24,10 +24,15 @@ import (
 	"fmt"
 	"ragflow/internal/common"
 	"ragflow/internal/dao"
+	"ragflow/internal/engine"
+	enginetypes "ragflow/internal/engine/types"
 	"ragflow/internal/entity"
 	"ragflow/internal/storage"
 	"ragflow/internal/utility"
 	"sort"
+	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.uber.org/zap"
@@ -39,6 +44,7 @@ type FileCommitService struct {
 	commitDAO     *dao.FileCommitDAO
 	commitItemDAO *dao.FileCommitItemDAO
 	fileDAO       *dao.FileDAO
+	kbDAO         *dao.KnowledgebaseDAO
 }
 
 // NewFileCommitService create file commit service
@@ -47,6 +53,7 @@ func NewFileCommitService() *FileCommitService {
 		commitDAO:     dao.NewFileCommitDAO(),
 		commitItemDAO: dao.NewFileCommitItemDAO(),
 		fileDAO:       dao.NewFileDAO(),
+		kbDAO:         dao.NewKnowledgebaseDAO(),
 	}
 }
 
@@ -119,7 +126,7 @@ func (s *FileCommitService) CreateCommit(ctx context.Context, folderID, authorID
 				objKey := ".objects/" + hashHex
 
 				if storageImpl != nil {
-					if err := storageImpl.Put(folderID, objKey, contentBytes); err != nil {
+					if err := storageImpl.Put(ctx, folderID, objKey, contentBytes); err != nil {
 						return fmt.Errorf("failed to store object: %w", err)
 					}
 				}
@@ -233,6 +240,339 @@ func (s *FileCommitService) CreateCommit(ctx context.Context, folderID, authorID
 	return commit, nil
 }
 
+// PageEditCommitInput carries the data needed to record a single wiki/skill
+// page edit as an audit commit.
+type PageEditCommitInput struct {
+	DatasetID  string // knowledgebase scope, stored on the commit for isolation
+	Slug       string
+	PageType   string
+	Title      string
+	Comments   string // version note typed by the user in the commit dialog
+	AuthorID   string
+	OldContent string
+	NewContent string
+}
+
+// wikiFileID derives the stable file key used to scope page-edit commits to a
+// specific knowledgebase and page, so identical slugs in different
+// knowledgebases never share a commit parent or history.
+func wikiFileID(datasetID, pageType, slug string) string {
+	return datasetID + "/" + pageType + "/" + slug
+}
+
+var pageCommitSeq atomic.Uint64
+
+const (
+	wikiContentStorage     = "minio"
+	wikiCommitBucketPrefix = ".wiki_commits"
+)
+
+// RecordPageEdit records a wiki/skill page edit as an audit commit with a
+// git-style parent chain (each edit points at the previous commit for the same
+// page). The post-save content is stored as a content-addressed object and a
+// unified diff is stored on the commit item. The commit is scoped to the
+// dataset via FolderID and a derived page file key so page histories never cross
+// knowledgebase boundaries.
+//
+// This path is independent of the workspace File tree (it does not require a
+// File record or a tree_state snapshot).
+func (s *FileCommitService) RecordPageEdit(ctx context.Context, in PageEditCommitInput) (*entity.FileCommit, error) {
+	// Parent chain: previous commit that touched the same page file key.
+	fileID := wikiFileID(in.DatasetID, in.PageType, in.Slug)
+
+	commitID := utility.GenerateUUID()
+
+	diffText := unifiedDiff(in.OldContent, in.NewContent)
+	if diffText == "" {
+		return nil, nil
+	}
+	contentAfterStorage, contentAfterLocation := s.storePageContent(ctx, in.DatasetID, in.NewContent)
+	slugKwd := in.Slug
+	pageTypeKwd := in.PageType
+	operation := "modify"
+	if in.OldContent == "" {
+		operation = "add"
+	}
+
+	item := &entity.FileCommitItem{
+		ID:          utility.GenerateUUID(),
+		CommitID:    commitID,
+		FileID:      fileID,
+		Operation:   operation,
+		Diff:        &diffText,
+		SlugKwd:     &slugKwd,
+		PageTypeKwd: &pageTypeKwd,
+	}
+	if contentAfterStorage != "" {
+		item.ContentAfterStorage = &contentAfterStorage
+	}
+	if contentAfterLocation != "" {
+		item.ContentAfterLocation = &contentAfterLocation
+	}
+
+	var commit *entity.FileCommit
+	// Serialize parent selection with insertion in process so two concurrent
+	// edits on the same page cannot both read the same parent and fork the
+	// chain. This is backend-agnostic (works identically on MySQL and SQLite)
+	// and cheaper than row-level DB locks.
+	mu := pageCommitLock(fileID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	item.Seq = uint(pageCommitSeq.Add(1))
+
+	// Read the parent inside the lock, on the shared connection, so it always
+	// reflects the previously committed edit for this page.
+	parentID, perr := s.commitItemDAO.GetLatestCommitIDByFileID(ctx, dao.DB, fileID)
+	if perr != nil {
+		return nil, fmt.Errorf("failed to resolve page commit parent: %w", perr)
+	}
+
+	commit = &entity.FileCommit{
+		ID:        commitID,
+		FolderID:  in.DatasetID,
+		Message:   in.Title,
+		AuthorID:  in.AuthorID,
+		Title:     &in.Title,
+		Comments:  &in.Comments,
+		FileCount: 1,
+	}
+	if parentID != "" {
+		commit.ParentID = &parentID
+	}
+
+	if err := dao.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if cerr := tx.Create(commit).Error; cerr != nil {
+			return fmt.Errorf("failed to create page commit: %w", cerr)
+		}
+		if ierr := tx.Create(item).Error; ierr != nil {
+			return fmt.Errorf("failed to create page commit item: %w", ierr)
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return commit, nil
+}
+
+// storePageContent saves a page version in the same dataset-scoped object
+// layout used by Python's MinIO-backed artifact history. Missing storage is
+// tolerated because page updates and audit rows are intentionally best-effort.
+func (s *FileCommitService) storePageContent(ctx context.Context, datasetID, content string) (string, string) {
+	storageImpl := storage.GetStorageFactory().GetStorage()
+	if storageImpl == nil {
+		return "", ""
+	}
+	hash := sha256.Sum256([]byte(content))
+	location := wikiCommitBucketPrefix + "/" + hex.EncodeToString(hash[:])
+	if err := storageImpl.Put(ctx, datasetID, location, []byte(content)); err != nil {
+		common.Warn("failed to store wiki commit content", zap.Error(err))
+		return "", ""
+	}
+	return wikiContentStorage, location
+}
+
+// pageCommitLocks is a per-page-file-key mutex registry that serializes
+// RecordPageEdit calls for the same page. Entries are retained for the process
+// lifetime (bounded by the number of distinct pages edited).
+var pageCommitLocks sync.Map // fileID -> *sync.Mutex
+
+func pageCommitLock(fileID string) *sync.Mutex {
+	v, _ := pageCommitLocks.LoadOrStore(fileID, &sync.Mutex{})
+	return v.(*sync.Mutex)
+}
+
+// ListPageCommits lists audit commits for a specific wiki/skill page and
+// returns them in the row shape the wiki version-history UI consumes
+// (Python list_page_commits parity), including author nicknames.
+func (s *FileCommitService) ListPageCommits(ctx context.Context, datasetID, pageType, slug string, page, pageSize int) ([]*entity.WikiPageCommit, int64, error) {
+	items, err := s.commitItemDAO.ListByFileID(ctx, dao.DB, wikiFileID(datasetID, pageType, slug))
+	if err != nil {
+		return nil, 0, err
+	}
+	commitIDs := make([]string, 0, len(items))
+	for _, it := range items {
+		commitIDs = append(commitIDs, it.CommitID)
+	}
+	if len(commitIDs) == 0 {
+		return []*entity.WikiPageCommit{}, 0, nil
+	}
+
+	commits, total, err := s.commitDAO.ListByIDs(ctx, dao.DB, commitIDs, page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Resolve author nicknames for all distinct authors in one batched
+	// lookup (Python list_page_commits parity: a single IN query); a failed
+	// lookup degrades to empty nicknames instead of failing the listing.
+	authorIDs := make([]string, 0, len(commits))
+	seenAuthors := make(map[string]struct{}, len(commits))
+	for _, c := range commits {
+		if c.AuthorID == "" {
+			continue
+		}
+		if _, ok := seenAuthors[c.AuthorID]; ok {
+			continue
+		}
+		seenAuthors[c.AuthorID] = struct{}{}
+		authorIDs = append(authorIDs, c.AuthorID)
+	}
+	nicknames := make(map[string]string, len(authorIDs))
+	if len(authorIDs) > 0 {
+		if resolved, uerr := dao.NewUserDAO().GetNicknamesByIDs(ctx, dao.DB, authorIDs); uerr == nil {
+			nicknames = resolved
+		}
+	}
+
+	rows := make([]*entity.WikiPageCommit, 0, len(commits))
+	for _, c := range commits {
+		row := &entity.WikiPageCommit{
+			ID:           c.ID,
+			UserID:       c.AuthorID,
+			CreateTime:   c.CreateTime,
+			CreateDate:   c.CreateDate,
+			UserNickname: nicknames[c.AuthorID],
+		}
+		if c.Title != nil {
+			row.Title = *c.Title
+		}
+		if c.Comments != nil {
+			row.Comments = *c.Comments
+		}
+		rows = append(rows, row)
+	}
+	return rows, total, nil
+}
+
+type unifiedDiffLine struct {
+	prefix  byte
+	text    string
+	oldLine int
+	newLine int
+}
+
+// unifiedDiff produces a standard unified diff that can be parsed by the
+// frontend's wiki diff renderer and Python's artifact history implementation.
+func unifiedDiff(oldText, newText string) string {
+	oldLines := strings.Split(oldText, "\n")
+	newLines := strings.Split(newText, "\n")
+
+	const contextLines = 3
+	// Longest common subsequence over lines, then render the diff.
+	cur := make([][]int, len(oldLines)+1)
+	for i := range cur {
+		cur[i] = make([]int, len(newLines)+1)
+	}
+	for i := len(oldLines) - 1; i >= 0; i-- {
+		for j := len(newLines) - 1; j >= 0; j-- {
+			if oldLines[i] == newLines[j] {
+				cur[i][j] = cur[i+1][j+1] + 1
+			} else if cur[i+1][j] >= cur[i][j+1] {
+				cur[i][j] = cur[i+1][j]
+			} else {
+				cur[i][j] = cur[i][j+1]
+			}
+		}
+	}
+
+	lines := make([]unifiedDiffLine, 0, len(oldLines)+len(newLines))
+	i, j := 0, 0
+	for i < len(oldLines) && j < len(newLines) {
+		if oldLines[i] == newLines[j] {
+			lines = append(lines, unifiedDiffLine{' ', oldLines[i], i + 1, j + 1})
+			i++
+			j++
+		} else if cur[i+1][j] >= cur[i][j+1] {
+			lines = append(lines, unifiedDiffLine{'-', oldLines[i], i + 1, 0})
+			i++
+		} else {
+			lines = append(lines, unifiedDiffLine{'+', newLines[j], 0, j + 1})
+			j++
+		}
+	}
+	for ; i < len(oldLines); i++ {
+		lines = append(lines, unifiedDiffLine{'-', oldLines[i], i + 1, 0})
+	}
+	for ; j < len(newLines); j++ {
+		lines = append(lines, unifiedDiffLine{'+', newLines[j], 0, j + 1})
+	}
+
+	changed := make([]int, 0)
+	for index, line := range lines {
+		if line.prefix != ' ' {
+			changed = append(changed, index)
+		}
+	}
+	if len(changed) == 0 {
+		return ""
+	}
+
+	// Group nearby changes into hunks with up to three context lines, matching
+	// the format produced by Python's difflib.unified_diff.
+	type diffHunk struct {
+		start int
+		end   int
+	}
+	hunks := make([]diffHunk, 0)
+	for _, index := range changed {
+		start := index - contextLines
+		if start < 0 {
+			start = 0
+		}
+		end := index + contextLines
+		if end >= len(lines) {
+			end = len(lines) - 1
+		}
+		if len(hunks) > 0 && start <= hunks[len(hunks)-1].end+1 {
+			if end > hunks[len(hunks)-1].end {
+				hunks[len(hunks)-1].end = end
+			}
+			continue
+		}
+		hunks = append(hunks, diffHunk{start: start, end: end})
+	}
+
+	var b strings.Builder
+	b.WriteString("--- a\n+++ b\n")
+	for _, hunk := range hunks {
+		oldStart, oldCount := diffRange(lines, hunk.start, hunk.end, false, len(oldLines))
+		newStart, newCount := diffRange(lines, hunk.start, hunk.end, true, len(newLines))
+		b.WriteString(fmt.Sprintf("@@ -%d,%d +%d,%d @@\n", oldStart, oldCount, newStart, newCount))
+		for index := hunk.start; index <= hunk.end; index++ {
+			b.WriteByte(lines[index].prefix)
+			b.WriteString(lines[index].text)
+			b.WriteByte('\n')
+		}
+	}
+	return b.String()
+}
+
+// diffRange returns the first line number and line count for one side of a
+// unified diff hunk. A zero count is valid for pure insertions or deletions.
+func diffRange(lines []unifiedDiffLine, start, end int, newSide bool, totalLines int) (int, int) {
+	first := 0
+	count := 0
+	for index := start; index <= end; index++ {
+		lineNumber := lines[index].oldLine
+		if newSide {
+			lineNumber = lines[index].newLine
+		}
+		if lineNumber == 0 {
+			continue
+		}
+		if first == 0 {
+			first = lineNumber
+		}
+		count++
+	}
+	if first == 0 {
+		first = totalLines
+	}
+	return first, count
+}
+
 // ListCommits lists commits for a workspace folder with pagination
 func (s *FileCommitService) ListCommits(ctx context.Context, folderID string, page, pageSize int, orderBy string, desc bool) ([]*entity.FileCommit, int64, error) {
 	return s.commitDAO.ListByFolderID(ctx, dao.DB, folderID, page, pageSize, orderBy, desc)
@@ -241,6 +581,170 @@ func (s *FileCommitService) ListCommits(ctx context.Context, folderID string, pa
 // GetCommit gets a single commit by ID
 func (s *FileCommitService) GetCommit(ctx context.Context, commitID string) (*entity.FileCommit, error) {
 	return s.commitDAO.GetByID(ctx, dao.DB, commitID)
+}
+
+// GetPageCommitDetail returns the flat artifact-page commit shape shared by
+// the Python API and the wiki version-history frontend.
+func (s *FileCommitService) GetPageCommitDetail(ctx context.Context, datasetID, commitID string) (*entity.WikiPageCommitDetail, error) {
+	commit, err := s.commitDAO.GetByID(ctx, dao.DB, commitID)
+	if err != nil {
+		return nil, err
+	}
+	if commit.FolderID != datasetID || commit.Title == nil {
+		return nil, common.ErrNotFound
+	}
+
+	items, err := s.commitItemDAO.ListByCommitID(ctx, dao.DB, commitID)
+	if err != nil {
+		return nil, err
+	}
+	if len(items) == 0 {
+		return nil, common.ErrNotFound
+	}
+	item := items[0]
+
+	tenantID := ""
+	if s.kbDAO != nil {
+		kb, kerr := s.kbDAO.GetByID(ctx, dao.DB, datasetID)
+		if kerr != nil {
+			return nil, kerr
+		}
+		tenantID = kb.TenantID
+	}
+
+	pageType := ""
+	if item.PageTypeKwd != nil {
+		pageType = *item.PageTypeKwd
+	}
+	slug := ""
+	if item.SlugKwd != nil {
+		slug = *item.SlugKwd
+	}
+	diff := ""
+	if item.Diff != nil {
+		diff = *item.Diff
+	}
+	title := ""
+	if commit.Title != nil {
+		title = *commit.Title
+	}
+	comments := ""
+	if commit.Comments != nil {
+		comments = *commit.Comments
+	}
+
+	var userID *string
+	if commit.AuthorID != "" {
+		authorID := commit.AuthorID
+		userID = &authorID
+	}
+	nickname := ""
+	if commit.AuthorID != "" {
+		if resolved, nerr := dao.NewUserDAO().GetNicknameByID(ctx, dao.DB, commit.AuthorID); nerr == nil {
+			nickname = resolved
+		}
+	}
+
+	return &entity.WikiPageCommitDetail{
+		ID:           commit.ID,
+		TenantID:     tenantID,
+		KBID:         datasetID,
+		PageType:     pageType,
+		Slug:         slug,
+		UserID:       userID,
+		UserNickname: nickname,
+		Title:        title,
+		Comments:     comments,
+		Diff:         diff,
+		ContentAfter: s.readPageContent(ctx, datasetID, tenantID, pageType, slug, item),
+		CreateTime:   commit.CreateTime,
+		CreateDate:   commit.CreateDate,
+	}, nil
+}
+
+func (s *FileCommitService) readPageContent(ctx context.Context, datasetID, tenantID, pageType, slug string, item *entity.FileCommitItem) string {
+	if item != nil && item.ContentAfterStorage != nil && item.ContentAfterLocation != nil {
+		storageKind := *item.ContentAfterStorage
+		location := *item.ContentAfterLocation
+		switch storageKind {
+		case wikiContentStorage, "minio_storage":
+			if storageImpl := storage.GetStorageFactory().GetStorage(); storageImpl != nil {
+				if content, err := storageImpl.Get(ctx, datasetID, location); err == nil {
+					return string(content)
+				}
+			}
+		case "es":
+			if docEngine := engine.Get(); docEngine != nil && tenantID != "" {
+				raw, err := docEngine.GetChunk(ctx, wikiIndexName(tenantID), location, []string{datasetID})
+				if err == nil {
+					if content := pageContentValue(raw); content != "" {
+						return content
+					}
+				}
+			}
+		}
+	}
+
+	// Older Go page commits referenced the live page document instead of a
+	// content snapshot. Keep those records readable while all new commits use
+	// the snapshot path above.
+	return s.readCurrentPageContent(ctx, tenantID, datasetID, pageType, slug)
+}
+
+func (s *FileCommitService) readCurrentPageContent(ctx context.Context, tenantID, datasetID, pageType, slug string) string {
+	if tenantID == "" || datasetID == "" || pageType == "" || slug == "" {
+		return ""
+	}
+	docEngine := engine.Get()
+	if docEngine == nil {
+		return ""
+	}
+	slugKwd := slug
+	if !strings.HasPrefix(slugKwd, pageType+"/") {
+		slugKwd = pageType + "/" + slugKwd
+	}
+	result, err := docEngine.Search(ctx, &enginetypes.SearchRequest{
+		IndexNames:   []string{wikiIndexName(tenantID)},
+		KbIDs:        []string{datasetID},
+		Limit:        1,
+		SelectFields: []string{"md_with_weight", "content_with_weight"},
+		Filter: map[string]interface{}{
+			"compile_kwd":   []string{"wiki_page"},
+			"page_type_kwd": []string{pageType},
+			"slug_kwd":      []string{slugKwd},
+			"available_int": 1,
+		},
+	})
+	if err != nil || result == nil || len(result.Chunks) == 0 {
+		return ""
+	}
+	content := pageContentValue(result.Chunks[0]["md_with_weight"])
+	if content == "" {
+		content = pageContentValue(result.Chunks[0]["content_with_weight"])
+	}
+	return content
+}
+
+func pageContentValue(value interface{}) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case []string:
+		if len(v) > 0 {
+			return v[0]
+		}
+	case []interface{}:
+		if len(v) > 0 {
+			if first, ok := v[0].(string); ok {
+				return first
+			}
+		}
+	}
+	return ""
+}
+
+func wikiIndexName(tenantID string) string {
+	return "ragflow_" + tenantID
 }
 
 // ListCommitFiles lists all file change items for a commit
@@ -378,7 +882,7 @@ func (s *FileCommitService) GetUncommittedChanges(ctx context.Context, folderID 
 		}
 
 		if liveFile, ok := liveMap[fid]; ok {
-			liveHash := computeLiveFileHash(folderID, fid, liveFile)
+			liveHash := computeLiveFileHash(ctx, folderID, fid, liveFile)
 			committedHash := ""
 			if h, ok := committedEntry["hash"].(string); ok {
 				committedHash = h
@@ -569,7 +1073,7 @@ func (s *FileCommitService) GetCommitFileContent(ctx context.Context, folderID, 
 		return nil, fmt.Errorf("storage not initialized")
 	}
 
-	blob, err := storageImpl.Get(folderID, objKey)
+	blob, err := storageImpl.Get(ctx, folderID, objKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file content from storage: %w", err)
 	}
@@ -612,7 +1116,7 @@ func (s *FileCommitService) GetFileVersionHistory(ctx context.Context, fileID st
 }
 
 // computeLiveFileHash computes the SHA256 hash of current file content from storage
-func computeLiveFileHash(folderID, fileID string, file *entity.File) string {
+func computeLiveFileHash(ctx context.Context, folderID, fileID string, file *entity.File) string {
 	if file.Location == nil || *file.Location == "" {
 		return ""
 	}
@@ -622,7 +1126,7 @@ func computeLiveFileHash(folderID, fileID string, file *entity.File) string {
 		return ""
 	}
 
-	data, err := storageImpl.Get(folderID, *file.Location)
+	data, err := storageImpl.Get(ctx, folderID, *file.Location)
 	if err != nil {
 		return ""
 	}

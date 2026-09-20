@@ -45,17 +45,47 @@ func (dao *FileDAO) GetByID(ctx context.Context, db *gorm.DB, id string) (*entit
 	return &file, nil
 }
 
-// GetByPfID gets files by parent folder ID with pagination and filtering
-func (dao *FileDAO) GetByPfID(ctx context.Context, db *gorm.DB, tenantID, pfID string, page, pageSize int, orderBy string, desc bool, keywords string) ([]*entity.File, int64, error) {
+// GetByIDAndTenant gets a file by ID scoped to the given tenant. Callers that
+// resolve a user-supplied file ID (e.g. parser_config.tags.tag_file_id, which
+// the dataset update API accepts from the client) MUST use this instead of
+// GetByID: an unscoped ID lookup crosses tenant boundaries and is an IDOR
+// (CWE-639). An empty id or tenantID fails closed with gorm.ErrRecordNotFound
+// so callers see the same "not found" as a missing row.
+func (dao *FileDAO) GetByIDAndTenant(ctx context.Context, db *gorm.DB, id, tenantID string) (*entity.File, error) {
+	if id == "" || tenantID == "" {
+		return nil, gorm.ErrRecordNotFound
+	}
+	var file entity.File
+	err := db.WithContext(ctx).Where("id = ? AND tenant_id = ?", id, tenantID).First(&file).Error
+	if err != nil {
+		return nil, err
+	}
+	return &file, nil
+}
+
+// GetByPfID gets files by parent folder ID with pagination and filtering.
+// When keywords is empty, only direct children of pfID are listed; when
+// keywords is non-empty, the search covers the whole subtree under pfID so
+// files and folders nested in sub-folders can be found too.
+func (dao *FileDAO) GetByPfID(ctx context.Context, db *gorm.DB, tenantID, pfID string, page, pageSize int, terms []OrderTerm, keywords string, excludeSkills bool) ([]*entity.File, int64, error) {
 	var files []*entity.File
 	var total int64
 
 	query := db.WithContext(ctx).Model(&entity.File{}).
-		Where("tenant_id = ? AND parent_id = ? AND id != ?", tenantID, pfID, pfID)
+		Where("tenant_id = ? AND id != ?", tenantID, pfID)
 
-	// Apply keyword filter
 	if keywords != "" {
-		query = query.Where("LOWER(name) LIKE ?", "%"+strings.ToLower(keywords)+"%")
+		descendantIDs, err := dao.GetSubtreeIDs(ctx, db, tenantID, pfID)
+		if err != nil {
+			return nil, 0, err
+		}
+		query = query.Where("parent_id IN ?", descendantIDs).
+			Where("LOWER(name) LIKE ?", "%"+strings.ToLower(keywords)+"%")
+	} else {
+		query = query.Where("parent_id = ?", pfID)
+	}
+	if excludeSkills {
+		query = query.Where("NOT (parent_id = ? AND name = ?)", pfID, SkillsFolderName)
 	}
 
 	// Count total
@@ -63,12 +93,12 @@ func (dao *FileDAO) GetByPfID(ctx context.Context, db *gorm.DB, tenantID, pfID s
 		return nil, 0, err
 	}
 
-	// Apply ordering
-	orderDirection := "ASC"
-	if desc {
-		orderDirection = "DESC"
-	}
-	query = query.Order(orderBy + " " + orderDirection)
+	// Apply ordering. Route orderBy through fileOrderClause so a user-supplied
+	// query param can never reach Order() verbatim: the helper validates
+	// against fileOrderableColumns (a closed allowlist) and falls back to
+	// "create_time" on a miss.
+	// codeql[go/sql-injection] False positive: fileOrderClause
+	query = query.Order(fileOrderClause(terms))
 
 	// Apply pagination
 	if page > 0 && pageSize > 0 {
@@ -83,6 +113,43 @@ func (dao *FileDAO) GetByPfID(ctx context.Context, db *gorm.DB, tenantID, pfID s
 	}
 
 	return files, total, nil
+}
+
+// GetSubtreeIDs returns pfID itself plus the IDs of all entries nested under
+// it (folders and files), used to scope recursive keyword searches.
+func (dao *FileDAO) GetSubtreeIDs(ctx context.Context, db *gorm.DB, tenantID, pfID string) ([]string, error) {
+	var rows []struct {
+		ID       string
+		ParentID string
+	}
+	if err := db.WithContext(ctx).Model(&entity.File{}).
+		Select("id", "parent_id").
+		Where("tenant_id = ?", tenantID).
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	children := make(map[string][]string, len(rows))
+	for _, row := range rows {
+		children[row.ParentID] = append(children[row.ParentID], row.ID)
+	}
+
+	ids := []string{pfID}
+	inTree := map[string]struct{}{pfID: {}}
+	queue := []string{pfID}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, child := range children[cur] {
+			if _, ok := inTree[child]; ok {
+				continue
+			}
+			inTree[child] = struct{}{}
+			ids = append(ids, child)
+			queue = append(queue, child)
+		}
+	}
+	return ids, nil
 }
 
 // GetRootFolder gets or creates root folder for tenant
@@ -389,6 +456,9 @@ func reparentAndDeleteFolder(ctx context.Context, db *gorm.DB, dupID, keepID str
 
 // DatasetFolderName is the folder name for dataset
 const DatasetFolderName = ".knowledgebase"
+
+// SkillsFolderName is the folder name for skills
+const SkillsFolderName = "skills"
 
 // InitDatasetDocs initializes dataset documents for tenant.
 // This matches Python's FileService.init_dataset_docs method.

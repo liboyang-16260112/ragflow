@@ -3,8 +3,18 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+
 	"ragflow/internal/common"
+	"ragflow/internal/tokenizer"
 )
+
+const defaultMaxRerankTokens = 8196
+
+// ErrRerankTokenLimitPolicy identifies invalid token-limit configuration or oversized rerank input.
+var ErrRerankTokenLimitPolicy = errors.New("rerank token limit policy")
 
 // Message represents a chat message with role and content
 //
@@ -13,10 +23,14 @@ import (
 //	 - []interface{}: multimodal content array where each element is map[string]interface{}
 //	   (e.g., [{"type": "text", "text": "..."}, {"type": "image_url", "image_url": {"url": "..."}}])
 type Message struct {
-	Role       string                   `json:"role"`
-	Content    interface{}              `json:"content"`
-	ToolCallID string                   `json:"tool_call_id,omitempty"`
-	ToolCalls  []map[string]interface{} `json:"tool_calls,omitempty"`
+	Role         string                   `json:"role"`
+	Content      interface{}              `json:"content"`
+	Name         interface{}              `json:"name,omitempty"`
+	ToolCallID   string                   `json:"tool_call_id,omitempty"`
+	ToolCalls    []map[string]interface{} `json:"tool_calls,omitempty"`
+	FunctionCall interface{}              `json:"function_call,omitempty"`
+	Refusal      interface{}              `json:"refusal,omitempty"`
+	Audio        interface{}              `json:"audio,omitempty"`
 }
 
 // ToolCallSession mirrors Python's common.mcp_tool_call_conn.ToolCallSession protocol.
@@ -24,7 +38,7 @@ type ToolCallSession interface {
 	ToolCall(name string, arguments map[string]interface{}) (string, error)
 }
 
-// EmbeddingModel interface for embedding models
+// ModelDriver interface for model functionality
 type ModelDriver interface {
 	NewInstance(baseURL map[string]string) ModelDriver
 
@@ -35,9 +49,9 @@ type ModelDriver interface {
 	// ChatStreamlyWithSender sends multiple messages asynchronously
 	ChatStreamlyWithSender(ctx context.Context, modelName string, messages []Message, apiConfig *APIConfig, modelConfig *ChatConfig, modelUsage *common.ModelUsage, sender func(*string, *string) error) error
 	// Embed a list of texts into embeddings
-	Embed(ctx context.Context, modelName *string, texts []string, apiConfig *APIConfig, embeddingConfig *EmbeddingConfig, modelUsage *common.ModelUsage) ([]EmbeddingData, error)
+	Embed(ctx context.Context, modelName *string, request EmbedRequest, apiConfig *APIConfig, embeddingConfig *EmbeddingConfig, modelUsage *common.ModelUsage) ([]EmbeddingData, error)
 	// Rerank calculates similarity scores between query and texts
-	Rerank(ctx context.Context, modelName *string, query string, documents []string, apiConfig *APIConfig, rerankConfig *RerankConfig, modelUsage *common.ModelUsage) (*RerankResponse, error)
+	Rerank(ctx context.Context, modelName *string, request RerankRequest, apiConfig *APIConfig, rerankConfig *RerankConfig, modelUsage *common.ModelUsage) (*RerankResponse, error)
 	// TranscribeAudio transcribe audio
 	TranscribeAudio(ctx context.Context, modelName *string, file *string, apiConfig *APIConfig, asrConfig *ASRConfig, modelUsage *common.ModelUsage) (*ASRResponse, error)
 	TranscribeAudioWithSender(ctx context.Context, modelName *string, file *string, apiConfig *APIConfig, asrConfig *ASRConfig, modelUsage *common.ModelUsage, sender func(*string, *string) error) error
@@ -79,7 +93,11 @@ type TokenUsage struct {
 type EmbeddingData struct {
 	Embedding []float64 `json:"embedding"`
 	Index     int       `json:"index"`
-	// FIXME: add implementation
+	// TokenCount is what this input cost, taken from the provider's reported
+	// usage. Embedding APIs report usage per *request*, not per input, so the
+	// ingest path distributes the request total across the inputs it sent
+	// (internal/ingestion/task/embedder.go). It stays 0 for providers that
+	// report no usage at all — by design, rather than inventing a number.
 	TokenCount int `json:"token_count"`
 }
 
@@ -98,6 +116,9 @@ type ASRResponse struct {
 
 type TTSResponse struct {
 	Audio []byte `json:"audio"`
+	// MediaType is the MIME type of Audio (e.g. "audio/mpeg", "audio/wav").
+	// Empty means the caller's default (audio/mpeg).
+	MediaType string `json:"media_type,omitempty"`
 }
 
 type OCRFileResponse struct {
@@ -105,12 +126,14 @@ type OCRFileResponse struct {
 }
 
 type ListModelResponse struct {
-	Name         string         `json:"name"`
-	MaxTokens    *int           `json:"max_tokens"`
-	ModelTypes   []string       `json:"model_types"`
-	Thinking     *ModelThinking `json:"thinking"`
-	MaxDimension *int           `json:"max_dimension"` // used by embedding models
-	Dimensions   []int          `json:"dimensions"`
+	Name          string         `json:"name"`
+	ContextLength *int           `json:"context_length"`
+	MaxOutput     *int           `json:"max_output"`
+	ModelTypes    []string       `json:"model_types"`
+	Thinking      *ModelThinking `json:"thinking"`
+	MaxDimension  *int           `json:"max_dimension"`  // used by embedding models
+	MaxBatchSize  *int           `json:"max_batch_size"` // used by embedding models
+	Dimensions    []int          `json:"dimensions"`
 }
 
 type ParseFileResponse struct {
@@ -132,9 +155,10 @@ type TaskResponse struct {
 }
 
 type ModelListItem struct {
-	ID      string `json:"id"`
-	Object  string `json:"object"`
-	OwnedBy string `json:"owned_by"`
+	ID            string `json:"id"`
+	ContextLength *int   `json:"context_length"`
+	Object        string `json:"object"`
+	OwnedBy       string `json:"owned_by"`
 }
 
 type ModelList struct {
@@ -175,6 +199,7 @@ type ChatConfig struct {
 	Verbosity       *string
 	Tools           interface{}               `json:"tools,omitempty"`
 	ToolChoice      *string                   `json:"tool_choice,omitempty"`
+	ToolChoiceValue any                       `json:"-"`
 	ToolCallsResult *[]map[string]interface{} `json:"-"`
 	// UsageResult receives the token usage extracted from the final
 	// streaming chunk when stream_options.include_usage is true.
@@ -190,8 +215,31 @@ type APIConfig struct {
 	BaseURL *string
 }
 
+type EmbedRequest struct {
+	Texts  []string // for text
+	Images [][]byte // for image
+	Urls   []string // for image
+	// Query selects the query-side encoding for providers that embed queries
+	// and documents differently (Python's LLMBundle.encode_queries vs encode):
+	// Cohere/Bedrock-Cohere input_type=search_query, Voyage input_type=query,
+	// Jina task=retrieval.query, NVIDIA input_type=query, DashScope
+	// text_type=query. Providers without an asymmetric mode ignore it.
+	Query bool
+}
+
 type EmbeddingConfig struct {
-	Dimension int
+	Dimension      int
+	EncodingFormat string
+}
+
+type RerankRequest struct {
+	Query         string  // for text question
+	ImageQuery    []byte  // for image
+	ImageQueryURL *string // for image
+
+	Documents []string // for text candidates
+	Images    [][]byte // for image candidates
+	ImageURLs []string // for image candidates
 }
 
 type RerankConfig struct {
@@ -217,10 +265,11 @@ type ParseFileConfig struct {
 
 // EmbeddingModel wraps a ModelDriver with embedding-specific configuration
 type EmbeddingModel struct {
-	ModelDriver ModelDriver
-	ModelName   *string
-	APIConfig   *APIConfig
-	MaxTokens   int // Max input tokens for the embedding model, used for text truncation
+	ModelDriver  ModelDriver
+	ModelName    *string
+	APIConfig    *APIConfig
+	MaxTokens    int  // Max input tokens for the embedding model, used for text truncation
+	MaxBatchSize *int // Max texts per Embed request; nil means "resolve from provider capability at use site"
 }
 
 // NewEmbeddingModel creates a new EmbeddingModel
@@ -233,25 +282,108 @@ func NewEmbeddingModel(driver ModelDriver, modelName *string, apiConfig *APIConf
 	}
 }
 
+// ResolveBatchSize returns the max texts per Embed request for this embedding
+// model. It prefers an explicit MaxBatchSize set at construction time and falls
+// back to the provider capability (all_models.json batch_size, added by
+// #17877/#17878) via GetEmbeddingBatchSize, which itself defaults to
+// DefaultEmbeddingBatchSize.
+func (m *EmbeddingModel) ResolveBatchSize() int {
+	if m != nil && m.MaxBatchSize != nil && *m.MaxBatchSize > 0 {
+		return *m.MaxBatchSize
+	}
+	var name string
+	if m != nil && m.ModelName != nil {
+		name = *m.ModelName
+	}
+	return GetEmbeddingBatchSize(name)
+}
+
+// ResolveMaxTokens is ResolveBatchSize's counterpart for the input window: the
+// model's own declaration wins, then the provider catalog's context_length, then
+// 0, which tells the caller to apply its own default. Deliberately not 8192:
+// the catalog has embedding models with 512-token windows, and overshooting a
+// window is a rejected request while undershooting only truncates.
+func (m *EmbeddingModel) ResolveMaxTokens() int {
+	if m == nil {
+		return 0
+	}
+	if m.MaxTokens > 0 {
+		return m.MaxTokens
+	}
+	var name string
+	if m.ModelName != nil {
+		name = *m.ModelName
+	}
+	return GetEmbeddingMaxTokens(name)
+}
+
+// ResolveTokenizerID returns the tokenizer family declared for this model, or ""
+// when the model's own tokenizer is unknown (the caller then counts with cl100k
+// and a calibrated ratio).
+func (m *EmbeddingModel) ResolveTokenizerID() string {
+	if m == nil {
+		return ""
+	}
+	var name string
+	if m.ModelName != nil {
+		name = *m.ModelName
+	}
+	return GetEmbeddingTokenizer(name)
+}
+
 // RerankModel wraps a ModelDriver with rerank-specific configuration
 type RerankModel struct {
 	ModelDriver ModelDriver
 	ModelName   *string
 	APIConfig   *APIConfig
+	MaxTokens   int
 }
 
 // NewRerankModel creates a new RerankModel
-func NewRerankModel(driver ModelDriver, modelName *string, apiConfig *APIConfig) *RerankModel {
+func NewRerankModel(driver ModelDriver, modelName *string, apiConfig *APIConfig, maxTokens int) *RerankModel {
+	if maxTokens <= 0 {
+		maxTokens = defaultMaxRerankTokens
+	}
 	return &RerankModel{
 		ModelDriver: driver,
 		ModelName:   modelName,
 		APIConfig:   apiConfig,
+		MaxTokens:   maxTokens,
 	}
 }
 
 // Rerank calculates similarity between query and texts
-func (r *RerankModel) Rerank(ctx context.Context, query string, texts []string, apiConfig *APIConfig, rerankConfig *RerankConfig, modelUsage *common.ModelUsage) (*RerankResponse, error) {
-	return r.ModelDriver.Rerank(ctx, r.ModelName, query, texts, apiConfig, rerankConfig, modelUsage)
+func (r *RerankModel) Rerank(ctx context.Context, request RerankRequest, apiConfig *APIConfig, rerankConfig *RerankConfig, modelUsage *common.ModelUsage) (*RerankResponse, error) {
+	maxTokens := r.MaxTokens
+	if maxTokens <= 0 {
+		maxTokens = defaultMaxRerankTokens
+	}
+	mode := strings.ToLower(strings.TrimSpace(common.GetEnv(common.EnvRerankTokenLimitMode)))
+	if mode == "" {
+		mode = "truncate"
+	}
+	if mode != "truncate" && mode != "passthrough" && mode != "raise_error" {
+		return nil, fmt.Errorf("%w: invalid %s %q; expected %q, %q, or %q", ErrRerankTokenLimitPolicy, common.EnvRerankTokenLimitMode, mode, "truncate", "passthrough", "raise_error")
+	}
+	if mode != "passthrough" && request.Query != "" && len(request.Documents) > 0 {
+		queryTokens := tokenizer.NumTokensFromString(request.Query)
+		if mode == "truncate" {
+			documentTokens := max(maxTokens-queryTokens, 0)
+			documents := make([]string, len(request.Documents))
+			for i, document := range request.Documents {
+				documents[i] = tokenizer.TrimContentToTokenLimit(document, documentTokens)
+			}
+			request.Documents = documents
+		} else {
+			for i, document := range request.Documents {
+				inputTokens := queryTokens + tokenizer.NumTokensFromString(document)
+				if inputTokens > maxTokens {
+					return nil, fmt.Errorf("%w: rerank input at document index %d has %d tokens, exceeding the configured maximum of %d", ErrRerankTokenLimitPolicy, i, inputTokens, maxTokens)
+				}
+			}
+		}
+	}
+	return r.ModelDriver.Rerank(ctx, r.ModelName, request, apiConfig, rerankConfig, modelUsage)
 }
 
 // ToolConfig bundles tool-calling configuration for a ChatModel.
@@ -260,6 +392,12 @@ type ToolConfig struct {
 	MaxRounds       int             // max tool-calling rounds (default: 5)
 	MaxRetries      int             // max retries on failure (default: 3)
 	ToolCallSession ToolCallSession // session that executes tool calls
+	// TerminalTools names tools whose successful result is already the final
+	// answer. When a round executes one of them, the loop stops and returns
+	// that result instead of feeding it back for another model round. Mirrors
+	// Python's chat_mdl.terminal_tools short-circuit (chat_model.py:619-627).
+	// Empty disables the short-circuit (existing behaviour).
+	TerminalTools map[string]struct{}
 }
 
 // ChatModel wraps a ModelDriver with chat-specific configuration
@@ -268,10 +406,6 @@ type ChatModel struct {
 	ModelName   *string
 	APIConfig   *APIConfig
 	ToolConfig  *ToolConfig
-	// LastUsage holds the token usage (prompt/completion/total) of the most
-	// recent chat call. Consumed by callers for accurate Langfuse reporting
-	// and per-run token aggregation. Reset before each call.
-	LastUsage *TokenUsage
 }
 
 // NewChatModel creates a new ChatModel
@@ -304,4 +438,19 @@ func (cm *ChatModel) BindTools(session ToolCallSession, tools interface{}) {
 		MaxRetries:      defaultMaxRetries,
 		ToolCallSession: session,
 	}
+}
+
+// SetTerminalTools marks the named tools as terminal: once one executes
+// successfully, the tool loop stops and returns its result as the final answer
+// rather than re-invoking the model. Mirrors Python
+// `chat_mdl.mdl.terminal_tools = {...}`. Call after BindTools.
+func (cm *ChatModel) SetTerminalTools(names ...string) {
+	if cm.ToolConfig == nil {
+		return
+	}
+	term := make(map[string]struct{}, len(names))
+	for _, n := range names {
+		term[n] = struct{}{}
+	}
+	cm.ToolConfig.TerminalTools = term
 }

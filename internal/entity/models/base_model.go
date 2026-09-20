@@ -24,20 +24,43 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"ragflow/internal/common"
 	"ragflow/internal/engine/clickhouse"
 	"sort"
 	"strings"
+	"sync"
 	"time"
-
-	"github.com/mitchellh/mapstructure"
 )
+
+const (
+	redactedLogValue      = "[REDACTED]"
+	maxLoggedVectorFloats = 3
+)
+
+// APIStatusError is a provider HTTP failure with its status code preserved, so
+// callers can act on the status (failover cooldown, retry) instead of matching
+// the error text. The shared request helpers return it; the message is byte-for-
+// byte what plain fmt.Errorf produced before, so existing assertions still hold.
+type APIStatusError struct {
+	Status int
+	Body   string
+}
+
+func (e *APIStatusError) Error() string {
+	return fmt.Sprintf("API request failed with status %d: %s", e.Status, e.Body)
+}
 
 type BaseModel struct {
 	BaseURL          map[string]string
 	URLSuffix        URLSuffix
 	httpClient       *http.Client
 	AllowEmptyAPIKey bool
+	// authHeader, when non-nil, supplies the (name, value) pair used for
+	// authentication instead of the default "Authorization: Bearer <key>".
+	// Drivers with non-standard auth (e.g. Xiaomi's api-key header, Xunfei's
+	// spark_api_password bundle) set it in their constructor.
+	authHeader func(*APIConfig) (string, string)
 }
 
 // chatResponseParts is the provider-normalized result of a non-streaming chat
@@ -47,7 +70,7 @@ type chatResponseParts struct {
 	RequestID     string
 	Content       *string
 	ReasonContent *string
-	ToolCalls     []map[string]interface{}
+	ToolCalls     []map[string]any
 	Usage         *TokenUsage
 }
 
@@ -63,9 +86,7 @@ func parseChatCompletionResponse(body []byte, chatConfig *ChatConfig, modelUsage
 		return nil, err
 	}
 
-	if err := collectChatModelUsage(modelUsage, parts.RequestID, parts.Usage); err != nil {
-		common.Error("Failed to collect model usage", err)
-	}
+	recordResponseUsage(modelUsage, parts.RequestID, parts.Usage, "chat")
 
 	return &ChatResponse{
 		Answer:        parts.Content,
@@ -75,14 +96,32 @@ func parseChatCompletionResponse(body []byte, chatConfig *ChatConfig, modelUsage
 	}, nil
 }
 
-// collectChatModelUsage records one completed chat response when the caller
-// supplied a usage sink.
-func collectChatModelUsage(modelUsage *common.ModelUsage, requestID string, usage *TokenUsage) error {
+// recordResponseUsage records the request ID and token usage returned by a
+// completed model response.
+//
+// When modelUsage is nil (caller did not pass a usage context) but
+// usage is non-nil, we still surface a single CollectModelUsage call
+// against a synthetic empty ModelUsage so the analytics path can
+// observe the provider's reported token counts. Without this, drivers
+// whose upstream service layer passes nil — common in the current
+// model_chat / generator code paths — would never reach the stats
+// driver and the token usage would be invisible. The synthetic record
+// carries zero UserID/TenantID; production callers should pass a
+// populated *common.ModelUsage to attribute usage to a tenant.
+func recordResponseUsage(modelUsage *common.ModelUsage, requestID string, usage *TokenUsage, modelType string) {
+	if usage == nil {
+		return
+	}
 	if modelUsage == nil {
-		return nil
+		modelUsage = &common.ModelUsage{}
+	}
+	if modelUsage.Type == "" {
+		modelUsage.Type = modelType
 	}
 	modelUsage.RequestID = requestID
-	return collectModelUsage(modelUsage, usage)
+	if err := collectModelUsage(modelUsage, usage); err != nil {
+		common.Error("Failed to collect model usage", err)
+	}
 }
 
 // collectModelUsage records token usage and response time for one model call.
@@ -97,33 +136,37 @@ func collectModelUsage(modelUsage *common.ModelUsage, usage *TokenUsage) error {
 		modelUsage.OutputTokens = usage.CompletionTokens
 		modelUsage.TotalTokens = usage.TotalTokens
 	}
-	modelUsage.ResponseTimeMS = time.Since(modelUsage.StartAt).Milliseconds()
+	// StartAt may be zero when the synthetic ModelUsage came from
+	// recordResponseUsage's nil-caller path. In that case we cannot
+	// compute a meaningful response time; leave it at zero instead
+	// of reporting a 50-year epoch delta.
+	if !modelUsage.StartAt.IsZero() {
+		modelUsage.ResponseTimeMS = time.Since(modelUsage.StartAt).Milliseconds()
+	}
 	return clickhouse.GetDriver().CollectModelUsage(modelUsage)
-}
-
-// decodeOpenAICompatibleStreamUsage extracts aggregate token usage from one
-// OpenAI-compatible streaming event. A missing usage field is not an error.
-func decodeOpenAICompatibleStreamUsage(event map[string]any) (*TokenUsage, bool, error) {
-	rawUsage, ok := event["usage"].(map[string]any)
-	if !ok {
-		return nil, false, nil
-	}
-	usage := &TokenUsage{}
-	if err := mapstructure.Decode(rawUsage, usage); err != nil {
-		return nil, false, err
-	}
-	return usage, true, nil
 }
 
 // applyStreamUsage exposes streamed token usage to the caller and records it
 // for model-usage analytics when a usage event is received. Analytics failures
 // are logged but do not interrupt the stream.
+//
+// Like recordResponseUsage, a nil modelUsage (the common case from the
+// model_chat / generator service layer) still surfaces a synthetic
+// CollectModelUsage call so streaming usage is not silently dropped. The
+// synthetic record carries zero UserID/TenantID; production callers should
+// pass a populated *common.ModelUsage to attribute usage to a tenant.
 func applyStreamUsage(chatConfig *ChatConfig, modelUsage *common.ModelUsage, usage *TokenUsage) {
 	if usage == nil {
 		return
 	}
 	if chatConfig != nil {
 		chatConfig.UsageResult = usage
+	}
+	if modelUsage == nil {
+		modelUsage = &common.ModelUsage{}
+	}
+	if modelUsage.Type == "" {
+		modelUsage.Type = "chat"
 	}
 	if err := collectModelUsage(modelUsage, usage); err != nil {
 		common.Error("Failed to collect model usage", err)
@@ -140,6 +183,132 @@ func (b *BaseModel) APIConfigCheck(apiConfig *APIConfig) error {
 	}
 
 	return nil
+}
+
+// applyAuth sets the authentication header on req. Drivers with a custom
+// authHeader hook (e.g. Xiaomi's api-key header, Xunfei's spark_api_password
+// bundle) use it; the default is "Authorization: Bearer <key>".
+func (b *BaseModel) applyAuth(req *http.Request, apiConfig *APIConfig) {
+	if b.authHeader != nil {
+		name, value := b.authHeader(apiConfig)
+		req.Header.Set(name, value)
+		return
+	}
+	if auth := BearerAuth(apiConfig); auth != "" {
+		req.Header.Set("Authorization", auth)
+	}
+}
+
+func (b *BaseModel) newJSONPostRequest(ctx context.Context, url string, apiConfig *APIConfig, reqBody map[string]any) (*http.Request, error) {
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	b.applyAuth(req, apiConfig)
+
+	return req, nil
+}
+
+// doRequest sends a JSON POST request and returns the response body.
+func (b *BaseModel) doRequest(ctx context.Context, url string, apiConfig *APIConfig, reqBody map[string]any, timeout time.Duration) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	req, err := b.newJSONPostRequest(ctx, url, apiConfig, reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := readModelErrorBody(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("API request failed with status %d; failed to read error response: %w", resp.StatusCode, err)
+		}
+		return nil, &APIStatusError{Status: resp.StatusCode, Body: string(body)}
+	}
+
+	body, err := readModelResponseBody(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	return body, nil
+}
+
+// doGetRequest sends a GET request and returns the response body.
+func (b *BaseModel) doGetRequest(ctx context.Context, url string, apiConfig *APIConfig, timeout time.Duration) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	b.applyAuth(req, apiConfig)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := readModelErrorBody(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("API request failed with status %d; failed to read error response: %w", resp.StatusCode, err)
+		}
+		return nil, &APIStatusError{Status: resp.StatusCode, Body: string(body)}
+	}
+
+	body, err := readModelResponseBody(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	return body, nil
+}
+
+// doStreamRequest sends a JSON POST request and calls handler with the response body.
+func (b *BaseModel) doStreamRequest(ctx context.Context, url string, apiConfig *APIConfig, reqBody map[string]any, timeout time.Duration, handler func(io.ReadCloser) error) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	req, err := b.newJSONPostRequest(ctx, url, apiConfig, reqBody)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Accept", "text/event-stream")
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := readModelErrorBody(resp.Body)
+		if err != nil {
+			return fmt.Errorf("API request failed with status %d; failed to read error response: %w", resp.StatusCode, err)
+		}
+		return &APIStatusError{Status: resp.StatusCode, Body: string(body)}
+	}
+
+	return handler(resp.Body)
 }
 
 // BearerAuth returns the Bearer token for Authorization header,
@@ -244,6 +413,11 @@ func ParseSSEStreamTolerant[T any](r io.Reader, onEvent func(event T) error) (do
 
 // ParseListModel Parse model list. Empty/whitespace IDs are skipped so
 // upstream typos do not surface as blank entries in the UI.
+//
+// Entries the catalog cannot type fall back to name-based inference
+// (InferModelTypes), mirroring Python's
+// OpenAIAPICompatible._format_model_list (rag/llm/model_meta.py) so remote
+// entries never surface type-less.
 func ParseListModel(modelList ModelList) []ListModelResponse {
 	var models []ListModelResponse
 	pm := GetProviderManager()
@@ -257,26 +431,52 @@ func ParseListModel(modelList ModelList) []ListModelResponse {
 		if pm != nil {
 			modelEntity = pm.GetModelByNameOrAlias(modelName)
 		}
-		if model.OwnedBy != "" {
-			modelName = modelName + "@" + model.OwnedBy
-		}
+
 		modelResponse.Name = modelName
 		if modelEntity != nil {
 			modelResponse.MaxDimension = modelEntity.MaxDimension
+			modelResponse.MaxBatchSize = modelEntity.MaxBatchSize
 			modelResponse.Dimensions = modelEntity.Dimensions
-			modelResponse.MaxTokens = modelEntity.MaxTokens
+			modelResponse.ContextLength = modelEntity.ContextLength
+			modelResponse.MaxOutput = modelEntity.MaxOutput
 			modelResponse.ModelTypes = modelEntity.ModelTypes
 			modelResponse.Thinking = modelEntity.Thinking
-			modelResponse.Dimensions = modelEntity.Dimensions
 		}
 
+		if model.ContextLength != nil && *model.ContextLength > 0 {
+			modelResponse.ContextLength = model.ContextLength
+		}
+
+		// The provider-list merge treats remote entries as authoritative
+		// (internal/handler/providers.go) and the instance save path
+		// persists whatever types this list carries, so a catalog miss
+		// must not leave ModelTypes empty — the UI renders type-less
+		// models with an LLM-only badge. Infer types from the model name
+		// (vision models like qwen-vl-plus keep their VLM tag even before
+		// the catalog knows them); InferModelTypes always returns at
+		// least ["chat"].
+		if len(modelResponse.ModelTypes) == 0 {
+			modelResponse.ModelTypes = InferModelTypes(modelName)
+		}
 		models = append(models, modelResponse)
 	}
-	return models
+	return FillMissingModelTypes(models)
 }
 
 // NewDriverHTTPClient returns an *http.Client with the standard connection-pool
-func NewDriverHTTPClient() *http.Client {
+// settings, an SSRF guard, and opt-in provider request/response logging wired
+// into its Transport. Logging is disabled unless LLM_DEBUG is true when the
+// client is created, normally during process startup.
+//
+// allowPrivate selects the guard strictness:
+//   - false (cloud-hosted drivers): every request is validated with
+//     common.AssertURLSafe — scheme + host must be present and every resolved
+//     IP must be globally routable (private/loopback/link-local/metadata are
+//     rejected). This is the default and closes the go/request-forgery sink.
+//   - true (local-inference drivers): requests are validated with
+//     utility.AssertURLSchemeSafe — only the scheme and a non-empty host are
+//     enforced, so self-hosted backends on private networks or loopback work.
+func NewDriverHTTPClient(allowPrivate bool) *http.Client {
 	var t *http.Transport
 	if dt, ok := http.DefaultTransport.(*http.Transport); ok {
 		t = dt.Clone()
@@ -287,9 +487,279 @@ func NewDriverHTTPClient() *http.Client {
 	t.MaxIdleConnsPerHost = 10
 	t.IdleConnTimeout = 90 * time.Second
 	t.DisableCompression = false
-	t.ResponseHeaderTimeout = 2 * 60 * time.Second
+	t.ResponseHeaderTimeout = 20 * time.Minute
 	t.TLSHandshakeTimeout = 30 * time.Second
-	return &http.Client{Transport: t}
+
+	var rt http.RoundTripper = t
+	if allowPrivate {
+		rt = &schemeSafeTransport{base: rt}
+	} else {
+		rt = &strictSSRFTransport{base: rt}
+	}
+	rt = newProviderLoggingTransport(rt)
+	return &http.Client{Transport: rt}
+}
+
+func newProviderLoggingTransport(base http.RoundTripper) http.RoundTripper {
+	if base == nil {
+		base = http.DefaultTransport
+	}
+	if !common.IsLLMDebugEnabled() {
+		return base
+	}
+	return &providerLoggingTransport{base: base, now: time.Now}
+}
+
+type providerLoggingTransport struct {
+	base http.RoundTripper
+	now  func() time.Time
+}
+
+func (t *providerLoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	payload, err := readAndRestoreRequestBody(req)
+	if err != nil {
+		return nil, err
+	}
+	providerURL := redactProviderURL(req.URL)
+	logPayload := redactProviderBody(payload)
+
+	startedAt := t.now()
+	resp, err := t.base.RoundTrip(req)
+	if err != nil {
+		logProviderCall(providerURL, logPayload, 0, "", t.now().Sub(startedAt), 0, err)
+		return nil, err
+	}
+	if resp.Body == nil {
+		logProviderCall(providerURL, logPayload, resp.StatusCode, "", t.now().Sub(startedAt), 0, nil)
+		return resp, nil
+	}
+
+	resp.Body = &providerResponseBody{
+		ReadCloser: resp.Body,
+		startedAt:  startedAt,
+		now:        t.now,
+		log: func(body []byte, took, firstToken time.Duration) {
+			logProviderCall(providerURL, logPayload, resp.StatusCode, redactProviderBody(body), took, firstToken, nil)
+		},
+	}
+	return resp, nil
+}
+
+// providerResponseBody captures bytes while callers consume them, preserving
+// streaming delivery instead of eagerly reading the entire provider response.
+type providerResponseBody struct {
+	io.ReadCloser
+	body       bytes.Buffer
+	startedAt  time.Time
+	now        func() time.Time
+	firstToken time.Duration
+	firstOnce  sync.Once
+	logOnce    sync.Once
+	log        func([]byte, time.Duration, time.Duration)
+}
+
+func (b *providerResponseBody) Read(p []byte) (int, error) {
+	n, err := b.ReadCloser.Read(p)
+	if n > 0 {
+		b.firstOnce.Do(func() {
+			b.firstToken = b.now().Sub(b.startedAt)
+		})
+		_, _ = b.body.Write(p[:n])
+	}
+	if err == io.EOF {
+		b.writeLogOnce()
+	}
+	return n, err
+}
+
+func (b *providerResponseBody) Close() error {
+	err := b.ReadCloser.Close()
+	b.writeLogOnce()
+	return err
+}
+
+func (b *providerResponseBody) writeLogOnce() {
+	b.logOnce.Do(func() {
+		b.log(b.body.Bytes(), b.now().Sub(b.startedAt), b.firstToken)
+	})
+}
+
+func readAndRestoreRequestBody(req *http.Request) ([]byte, error) {
+	if req.Body == nil {
+		return nil, nil
+	}
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read provider request body for logging: %w", err)
+	}
+	_ = req.Body.Close()
+	req.Body = io.NopCloser(bytes.NewReader(body))
+	req.ContentLength = int64(len(body))
+	return body, nil
+}
+
+func redactProviderURL(requestURL *url.URL) string {
+	if requestURL == nil {
+		return ""
+	}
+	redacted := *requestURL
+	if redacted.User != nil {
+		redacted.User = url.User(redacted.User.Username())
+	}
+	query := redacted.Query()
+	for key := range query {
+		if isSensitiveLogKey(key) {
+			query.Set(key, redactedLogValue)
+		}
+	}
+	redacted.RawQuery = query.Encode()
+	return redacted.String()
+}
+
+func redactProviderBody(body []byte) string {
+	if len(body) == 0 {
+		return ""
+	}
+
+	var value any
+	if err := json.Unmarshal(body, &value); err == nil {
+		redactProviderValue(value)
+		if redacted, err := json.Marshal(value); err == nil {
+			return string(redacted)
+		}
+	}
+
+	lines := strings.Split(string(body), "\n")
+	redactedAny := false
+	for i, line := range lines {
+		prefix, data, ok := strings.Cut(line, "data:")
+		if !ok || strings.TrimSpace(data) == "[DONE]" {
+			continue
+		}
+		var event any
+		if err := json.Unmarshal([]byte(strings.TrimSpace(data)), &event); err != nil {
+			continue
+		}
+		redactProviderValue(event)
+		redacted, err := json.Marshal(event)
+		if err != nil {
+			continue
+		}
+		lines[i] = prefix + "data: " + string(redacted)
+		redactedAny = true
+	}
+	if redactedAny {
+		return strings.Join(lines, "\n")
+	}
+	return string(body)
+}
+
+func redactProviderValue(value any) {
+	switch value := value.(type) {
+	case map[string]any:
+		for key, child := range value {
+			if isSensitiveLogKey(key) {
+				value[key] = redactedLogValue
+				continue
+			}
+			if isVectorLogKey(key) {
+				child = truncateLoggedVectors(child)
+				value[key] = child
+			}
+			redactProviderValue(child)
+		}
+	case []any:
+		for _, child := range value {
+			redactProviderValue(child)
+		}
+	}
+}
+
+func isVectorLogKey(key string) bool {
+	switch strings.ToLower(key) {
+	case "embedding", "embeddings", "vector", "vectors":
+		return true
+	default:
+		return false
+	}
+}
+
+func truncateLoggedVectors(value any) any {
+	switch value := value.(type) {
+	case []any:
+		if isNumericVector(value) {
+			if len(value) > maxLoggedVectorFloats {
+				return value[:maxLoggedVectorFloats]
+			}
+			return value
+		}
+		for i, child := range value {
+			value[i] = truncateLoggedVectors(child)
+		}
+	case map[string]any:
+		for key, child := range value {
+			value[key] = truncateLoggedVectors(child)
+		}
+	}
+	return value
+}
+
+func isNumericVector(value []any) bool {
+	if len(value) == 0 {
+		return false
+	}
+	for _, item := range value {
+		if _, ok := item.(float64); !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func isSensitiveLogKey(key string) bool {
+	normalized := strings.NewReplacer("-", "", "_", "", ".", "").Replace(strings.ToLower(key))
+	switch normalized {
+	case "apikey", "authorization", "accesstoken", "refreshtoken", "password", "secret", "token", "key":
+		return true
+	default:
+		return false
+	}
+}
+
+func logProviderCall(providerURL, payload string, statusCode int, responseBody string, took, firstToken time.Duration, err error) {
+	request := fmt.Sprintf("url=%s payload=%s", providerURL, payload)
+	response := fmt.Sprintf("response_code=%d took=%s first-token=%s response_body=%s", statusCode, took, firstToken, responseBody)
+	if err != nil {
+		response += " error=" + err.Error()
+	}
+	common.LogRequestResponseInfo(request, response, err == nil && statusCode >= 200 && statusCode < 300)
+}
+
+// schemeSafeTransport wraps an http.RoundTripper so every outgoing request is
+// validated by the lenient SSRF guard (http/https scheme + non-empty host).
+// Private and loopback hosts are permitted. Used only by local-inference
+// drivers that may target a user's own network.
+type schemeSafeTransport struct{ base http.RoundTripper }
+
+func (t *schemeSafeTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if err := common.AssertURLSchemeSafe(req.URL.String()); err != nil {
+		return nil, err
+	}
+	return t.base.RoundTrip(req)
+}
+
+// strictSSRFTransport wraps an http.RoundTripper so every outgoing request is
+// validated by the strict SSRF guard (scheme + host + globally routable IP).
+// This is the default for cloud-hosted model drivers and closes the
+// go/request-forgery data flow: the user-controllable BaseURL cannot be made to
+// point at private hosts, loopback, link-local, or cloud metadata endpoints.
+type strictSSRFTransport struct{ base http.RoundTripper }
+
+func (t *strictSSRFTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if _, _, err := common.AssertURLSafe(req.URL.String()); err != nil {
+		return nil, err
+	}
+	return t.base.RoundTrip(req)
 }
 
 // PostJSONRequest marshals body to JSON, creates a POST request to url
@@ -317,17 +787,12 @@ func ReadErrorBody(r io.Reader) string {
 
 func buildRequestBody(cfg *ChatConfig, modelName string, messages []Message, stream bool) map[string]any {
 	reqBody := map[string]any{
-		"model":       modelName,
-		"messages":    buildChatMessages(messages),
-		"stream":      stream,
-		"temperature": 1,
+		"model":    modelName,
+		"messages": buildChatMessages(messages),
+		"stream":   stream,
 	}
 
 	if cfg != nil {
-		if cfg.MaxTokens != nil {
-			reqBody["max_tokens"] = *cfg.MaxTokens
-		}
-
 		if cfg.Temperature != nil {
 			reqBody["temperature"] = *cfg.Temperature
 		}
@@ -340,6 +805,10 @@ func buildRequestBody(cfg *ChatConfig, modelName string, messages []Message, str
 			reqBody["top_p"] = *cfg.TopP
 		}
 
+		if cfg.MaxTokens != nil {
+			reqBody["max_tokens"] = *cfg.MaxTokens
+		}
+
 		if cfg.Stop != nil {
 			reqBody["stop"] = *cfg.Stop
 		}
@@ -350,7 +819,11 @@ func buildRequestBody(cfg *ChatConfig, modelName string, messages []Message, str
 			if cfg.ToolChoice != nil {
 				toolChoice = *cfg.ToolChoice
 			}
-			reqBody["tool_choice"] = toolChoice
+			if cfg.ToolChoiceValue != nil {
+				reqBody["tool_choice"] = cfg.ToolChoiceValue
+			} else {
+				reqBody["tool_choice"] = toolChoice
+			}
 		}
 	}
 
@@ -372,11 +845,23 @@ func buildChatMessages(messages []Message) []map[string]any {
 			"role":    msg.Role,
 			"content": msg.Content,
 		}
+		if msg.Name != nil {
+			apiMsg["name"] = msg.Name
+		}
 		if msg.ToolCallID != "" {
 			apiMsg["tool_call_id"] = msg.ToolCallID
 		}
 		if len(msg.ToolCalls) > 0 {
 			apiMsg["tool_calls"] = msg.ToolCalls
+		}
+		if msg.FunctionCall != nil {
+			apiMsg["function_call"] = msg.FunctionCall
+		}
+		if msg.Refusal != nil {
+			apiMsg["refusal"] = msg.Refusal
+		}
+		if msg.Audio != nil {
+			apiMsg["audio"] = msg.Audio
 		}
 		apiMessages[i] = apiMsg
 	}
@@ -390,7 +875,11 @@ func applyChatToolConfig(reqBody map[string]interface{}, chatConfig *ChatConfig)
 	}
 	reqBody["tools"] = chatConfig.Tools
 	if chatConfig.ToolChoice != nil {
-		reqBody["tool_choice"] = *chatConfig.ToolChoice
+		if chatConfig.ToolChoiceValue != nil {
+			reqBody["tool_choice"] = chatConfig.ToolChoiceValue
+		} else {
+			reqBody["tool_choice"] = *chatConfig.ToolChoice
+		}
 	}
 }
 
