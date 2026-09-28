@@ -7,7 +7,8 @@ import { LucideHouse, LucideMenu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { publicAssetUrl } from '@/config/runtime';
+import { RuntimeConfig, publicAssetUrl } from '@/config/runtime';
+import { filterDeliveryNavigation } from '@/config/delivery-navigation';
 import { Routes } from '@/routes';
 import { supportsCssAnchor } from '@/utils/css-support';
 import { HomeIcon } from '@/components/svg-icon';
@@ -36,7 +37,7 @@ const MenuItemsIcon = ({
   name?: string;
 }) => <HomeIcon imgClass={className} name={name || 'datasets'} width={20} />;
 
-const menuItems = [
+const allMenuItems = [
   { path: Routes.Root, name: 'header.home', icon: LucideHouse },
   {
     path: Routes.Datasets,
@@ -78,6 +79,11 @@ const menuItems = [
     icon_name: 'file',
   },
 ];
+
+const menuItems = filterDeliveryNavigation(
+  allMenuItems,
+  RuntimeConfig.embeddedAuth,
+);
 
 function useActivePath() {
   const { pathname } = useLocation();
@@ -189,8 +195,7 @@ const DesktopNavbarFallback = () => {
               </Link>
             </li>
           );
-        })}
-      </ul>
+        })}      </ul>
     </nav>
   );
 };
@@ -289,8 +294,7 @@ export function MobileNavbar({ renderFooter }: MobileNavbarProps) {
                   onClick={close}
                 />
               </li>
-            ))}
-          </ul>
+            ))}          </ul>
         </nav>
 
         {renderFooter?.(close)}

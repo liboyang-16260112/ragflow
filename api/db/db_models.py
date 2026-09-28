@@ -1460,6 +1460,8 @@ class Task(DataBaseModel):
 class Dialog(DataBaseModel):
     id = CharField(max_length=32, primary_key=True)
     tenant_id = CharField(max_length=32, null=False, index=True)
+    source = CharField(max_length=32, null=True, help_text="managed integration source")
+    external_user_id = CharField(max_length=128, null=True, help_text="stable user ID from the managed integration")
     name = CharField(max_length=255, null=True, help_text="dialog application name", index=True)
     description = EmptyStringTextField(null=True, help_text="Dialog description")
     icon = EmptyStringTextField(null=True, help_text="icon base64 string")
@@ -1494,6 +1496,9 @@ class Dialog(DataBaseModel):
 
     class Meta:
         db_table = "dialog"
+        indexes = (
+            (("tenant_id", "source", "external_user_id"), True),
+        )
 
 
 class Conversation(DataBaseModel):
@@ -2395,6 +2400,8 @@ def migrate_db():
     alter_db_add_column(migrator, "file", "source_type", EmptyStringCharField(max_length=128, null=False, default="", help_text="where dose this document come from", index=True))
     alter_db_add_column(migrator, "tenant", "rerank_id", EmptyStringCharField(max_length=128, null=False, default="BAAI/bge-reranker-v2-m3", help_text="default rerank model ID"))
     alter_db_add_column(migrator, "dialog", "rerank_id", EmptyStringCharField(max_length=128, null=False, default="", help_text="default rerank model ID"))
+    alter_db_add_column(migrator, "dialog", "source", CharField(max_length=32, null=True, help_text="managed integration source"))
+    alter_db_add_column(migrator, "dialog", "external_user_id", CharField(max_length=128, null=True, help_text="stable user ID from the managed integration"))
     alter_db_column_type(migrator, "dialog", "top_k", IntegerField(default=1024))
     alter_db_add_column(migrator, "tenant_llm", "api_key", CharField(max_length=2048, null=True, help_text="API KEY", index=True))
     alter_db_add_column(migrator, "api_token", "source", CharField(max_length=16, null=True, help_text="none|agent|dialog", index=True))

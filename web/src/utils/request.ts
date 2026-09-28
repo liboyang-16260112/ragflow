@@ -18,6 +18,7 @@
  */
 
 import message from '@/components/ui/message';
+import { apiUrl } from '@/config/runtime';
 import { Authorization } from '@/constants/authorization';
 import { ResponseType } from '@/interfaces/database/base';
 import i18n from '@/locales/config';
@@ -112,7 +113,7 @@ request.interceptors.request.use((url: string, options: any) => {
     : addTenantParams(data, url);
 
   return {
-    url,
+    url: apiUrl(url),
     options: {
       ...options,
       data: dataWithTenantParams,

@@ -1,3 +1,4 @@
+import { RuntimeConfig } from '@/config/runtime';
 import { LanguageAbbreviation } from '@/constants/common';
 import storage from '@/utils/authorization-util';
 import dayjs from 'dayjs';
@@ -45,8 +46,48 @@ export const supportedLanguages = supportedLanguageCodes.map((code) => {
   };
 });
 
-export const DEFAULT_LANGUAGE_CODE =
-  import.meta.env?.VITE_DEFAULT_LANGUAGE_CODE || LanguageAbbreviation.Zh;
+const languageAliases: Record<string, string> = {
+  zh: LanguageAbbreviation.Zh,
+  'zh-cn': LanguageAbbreviation.Zh,
+  'zh-hans': LanguageAbbreviation.Zh,
+  'zh-tw': LanguageAbbreviation.ZhTraditional,
+  'zh-hant': LanguageAbbreviation.ZhTraditional,
+};
+
+export const normalizeLanguageCode = (language?: string | null): string => {
+  const value = language?.trim();
+  if (!value) return LanguageAbbreviation.Zh;
+
+  return languageAliases[value.replace('_', '-').toLowerCase()] || value;
+};
+
+export const DEFAULT_LANGUAGE_CODE = normalizeLanguageCode(
+  import.meta.env?.VITE_DEFAULT_LANGUAGE_CODE || LanguageAbbreviation.Zh,
+);
+
+export const resolveInitialLanguage = ({
+  embeddedAuth,
+  savedLanguage,
+  defaultLanguage,
+}: {
+  embeddedAuth: boolean;
+  savedLanguage?: string | null;
+  defaultLanguage: string;
+}): string =>
+  normalizeLanguageCode(
+    embeddedAuth ? defaultLanguage : savedLanguage || defaultLanguage,
+  );
+
+export const resolveRequestedLanguage = ({
+  embeddedAuth,
+  requestedLanguage,
+  defaultLanguage,
+}: {
+  embeddedAuth: boolean;
+  requestedLanguage: string;
+  defaultLanguage: string;
+}): string =>
+  normalizeLanguageCode(embeddedAuth ? defaultLanguage : requestedLanguage);
 
 const resources = {
   [LanguageAbbreviation.En]: translation_en,
@@ -55,7 +96,13 @@ const resources = {
 const updateDocumentLocale = (lng: string) => {
   document.documentElement.lang = lng;
   document.documentElement.dir = 'ltr';
-  dayjs.locale(lng === 'zh' ? 'zh-cn' : lng);
+  dayjs.locale(
+    lng === LanguageAbbreviation.Zh
+      ? 'zh-cn'
+      : lng === LanguageAbbreviation.ZhTraditional
+        ? 'zh-tw'
+        : lng,
+  );
 };
 
 i18n
@@ -76,7 +123,7 @@ i18n
   });
 
 export const loadLanguageAsync = async (lng: string): Promise<void> => {
-  const normalizedLng = lng;
+  const normalizedLng = normalizeLanguageCode(lng);
 
   if (i18n.hasResourceBundle(normalizedLng, 'translation')) {
     return;
@@ -102,7 +149,11 @@ export const changeLanguageAsync = async (
   options: { persist?: boolean } = {},
 ): Promise<void> => {
   const { persist = true } = options;
-  const normalizedLng = lng;
+  const normalizedLng = resolveRequestedLanguage({
+    embeddedAuth: RuntimeConfig.embeddedAuth,
+    requestedLanguage: lng,
+    defaultLanguage: DEFAULT_LANGUAGE_CODE,
+  });
 
   if (
     normalizedLng !== LanguageAbbreviation.En &&
@@ -112,16 +163,20 @@ export const changeLanguageAsync = async (
   }
 
   if (persist) {
-    storage.setLanguage(lng);
+    storage.setLanguage(normalizedLng);
   }
 
-  updateDocumentLocale(lng);
+  updateDocumentLocale(normalizedLng);
 
   await i18n.changeLanguage(normalizedLng);
 };
 
 export const initLanguage = async (): Promise<void> => {
-  const currentLng = storage.getLanguage() || DEFAULT_LANGUAGE_CODE;
+  const currentLng = resolveInitialLanguage({
+    embeddedAuth: RuntimeConfig.embeddedAuth,
+    savedLanguage: storage.getLanguage(),
+    defaultLanguage: DEFAULT_LANGUAGE_CODE,
+  });
 
   await changeLanguageAsync(currentLng);
 };

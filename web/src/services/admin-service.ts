@@ -18,6 +18,7 @@ import { history } from '@/utils/simple-history-util';
 import axios from 'axios';
 
 import message from '@/components/ui/message';
+import { RuntimeConfig } from '@/config/runtime';
 import { Authorization } from '@/constants/authorization';
 import i18n from '@/locales/config';
 import { Routes } from '@/routes';
@@ -34,6 +35,7 @@ import {
 } from './admin-service-adapter';
 
 const request = axios.create({
+  baseURL: RuntimeConfig.apiBasePath,
   timeout: 300000,
 });
 

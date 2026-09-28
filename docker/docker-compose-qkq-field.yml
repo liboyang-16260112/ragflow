@@ -1,0 +1,44 @@
+# GSJZ application-only production override.
+# It reuses the already-running base-* MySQL, Elasticsearch, MinIO and Redis
+# containers on the external dev network and starts only fmoss-rag-server-cpu.
+name: ragflow-gsjz-0272
+
+services:
+  # These two base services have no profiles in docker-compose-base.yml.
+  # Assigning a disabled profile prevents Compose from creating duplicates.
+  minio:
+    profiles: [field-base-disabled]
+  redis:
+    profiles: [field-base-disabled]
+
+  ragflow-cpu:
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DBNAME: ${MYSQL_DBNAME}
+      MYSQL_USER: ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      ES_HOST: ${ES_HOST}
+      ES_PORT: ${ES_PORT:-9200}
+      ES_USER: ${ES_USER:-}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      MINIO_HOST: ${MINIO_HOST}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_USER: ${MINIO_USER}
+      MINIO_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_PREFIX_PATH: ${MINIO_PREFIX_PATH:-}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_USERNAME: ${REDIS_USERNAME:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
+      QKQ_EMBEDDED_CHAT_ENABLED: ${QKQ_EMBEDDED_CHAT_ENABLED:-false}
+      QKQ_EMBEDDED_CHAT_SOURCE: ${QKQ_EMBEDDED_CHAT_SOURCE:-}
+      QKQ_EMBEDDED_CHAT_TEMPLATE_CHAT_ID: ${QKQ_EMBEDDED_CHAT_TEMPLATE_CHAT_ID:-}
+      QKQ_EMBEDDED_CHAT_IDENTITY_MODE: ${QKQ_EMBEDDED_CHAT_IDENTITY_MODE:-}
+
+networks:
+  ragflow:
+    name: ${RAGFLOW_NETWORK_NAME:-dev}
+    external: true

@@ -1,5 +1,6 @@
 import { RAGFlowAvatar } from '@/components/ragflow-avatar';
-import { publicAssetUrl } from '@/config/runtime';
+import { RuntimeConfig, publicAssetUrl } from '@/config/runtime';
+import { getDeliveryReturnPath } from '@/config/delivery-navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -29,7 +30,7 @@ import { MobileMenuFooter } from './mobile-menu-footer';
 import ThemeButton from './theme-button';
 import { useHeaderNavLayout } from './use-header-nav-layout';
 
-import { supportedLanguages } from '@/locales/config';
+import { DEFAULT_LANGUAGE_CODE, supportedLanguages } from '@/locales/config';
 
 export function Header({
   className,
@@ -48,7 +49,13 @@ export function Header({
     [tenantData],
   );
 
-  const currentLanguage = supportedLanguages.find((x) => x.code === language);
+  const effectiveLanguage = RuntimeConfig.embeddedAuth
+    ? DEFAULT_LANGUAGE_CODE
+    : language;
+  const currentLanguage = supportedLanguages.find(
+    (x) => x.code === effectiveLanguage,
+  );
+  const deliveryReturnPath = getDeliveryReturnPath(RuntimeConfig.embeddedAuth);
 
   const {
     headerRef,
@@ -56,7 +63,7 @@ export function Header({
     expandedRightMeasureRef,
     navMeasureRef,
     isCompact,
-  } = useHeaderNavLayout(`${hasNotification}-${language}`);
+  } = useHeaderNavLayout(`${hasNotification}-${effectiveLanguage}`);
 
   return (
     <>
@@ -76,17 +83,33 @@ export function Header({
             />
           )}
           <div ref={logoRef} className="inline-flex shrink-0 items-center">
-            <Link
-              to={Routes.Root}
-              aria-current={pathname === Routes.Root ? 'page' : undefined}
-              className="flex size-10 shrink-0 items-center justify-center"
-            >
-              <img
-                src={publicAssetUrl('/fmoss-logo.png')}
-                alt="FMoss-RAG logo"
-                className="size-10"
-              />
-            </Link>
+            {deliveryReturnPath ? (
+              <a
+                href={deliveryReturnPath}
+                target="_top"
+                aria-label="返回知识问答"
+                title="返回知识问答"
+                className="flex size-10 shrink-0 items-center justify-center"
+              >
+                <img
+                  src={publicAssetUrl('/fmoss-logo.png')}
+                  alt="金析助手"
+                  className="size-10"
+                />
+              </a>
+            ) : (
+              <Link
+                to={Routes.Root}
+                aria-current={pathname === Routes.Root ? 'page' : undefined}
+                className="flex size-10 shrink-0 items-center justify-center"
+              >
+                <img
+                  src={publicAssetUrl('/fmoss-logo.png')}
+                  alt="FMoss-RAG logo"
+                  className="size-10"
+                />
+              </Link>
+            )}
           </div>
         </div>
 
@@ -119,37 +142,39 @@ export function Header({
             </>
           )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  'size-10 shrink-0 px-0',
-                  !isCompact && 'size-auto gap-1 px-4',
-                )}
-                aria-label={currentLanguage?.displayName}
-              >
-                {isCompact && <LucideLanguages className="size-5" />}
-                {!isCompact && (
-                  <>
-                    {currentLanguage?.displayName}
-                    <LucideChevronDown className="size-[1em]" />
-                  </>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent align="end">
-              {supportedLanguages.map((x) => (
-                <DropdownMenuItem
-                  key={x.code}
-                  onClick={() => changeLanguage(x.code)}
+          {!RuntimeConfig.embeddedAuth && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    'size-10 shrink-0 px-0',
+                    !isCompact && 'size-auto gap-1 px-4',
+                  )}
+                  aria-label={currentLanguage?.displayName}
                 >
-                  {x.displayName}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {isCompact && <LucideLanguages className="size-5" />}
+                  {!isCompact && (
+                    <>
+                      {currentLanguage?.displayName}
+                      <LucideChevronDown className="size-[1em]" />
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end">
+                {supportedLanguages.map((x) => (
+                  <DropdownMenuItem
+                    key={x.code}
+                    onClick={() => changeLanguage(x.code)}
+                  >
+                    {x.displayName}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           {!isCompact && (
             <>

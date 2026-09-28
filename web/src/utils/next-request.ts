@@ -15,6 +15,7 @@
  */
 
 import message from '@/components/ui/message';
+import { RuntimeConfig } from '@/config/runtime';
 import { Authorization } from '@/constants/authorization';
 import i18n from '@/locales/config';
 import authorizationUtil, {
@@ -93,6 +94,7 @@ const errorHandler = (error: {
 let isRedirecting = false;
 
 const request = axios.create({
+  baseURL: RuntimeConfig.apiBasePath,
   //   errorHandler,
   timeout: 300000,
   //   getResponse: true,

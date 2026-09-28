@@ -25,13 +25,15 @@
  * enterprise billingStatus.ts.
  */
 
+import { apiUrl } from '@/config/runtime';
+
 type Listener = () => void;
 const listeners = new Set<Listener>();
 
 let backendLanguage: string | null = null;
 
 // Kick off the fetch at module load — app start, not component mount.
-const promise: Promise<string> = fetch('/api/v1/language')
+const promise: Promise<string> = fetch(apiUrl('/api/v1/language'))
   .then((r) => r.json())
   .then((body: { data?: { language?: string } }) => {
     backendLanguage = body.data?.language === 'go' ? 'go' : 'python';

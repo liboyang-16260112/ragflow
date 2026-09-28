@@ -70,8 +70,8 @@ RUN --mount=type=cache,id=ragflow_apt,target=/var/cache/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache && \
     chmod 1777 /tmp && \
-    apt update && \
-    apt --no-install-recommends install -y ca-certificates \
+    apt -o Acquire::Retries=5 update && \
+    apt -o Acquire::Retries=5 --no-install-recommends install -y ca-certificates \
     libglib2.0-0 libglx-mesa0 libgl1 pkg-config libgdiplus default-jdk libatk-bridge2.0-0 \
     libgtk-4-1 libnss3 xdg-utils libjemalloc-dev gnupg unzip curl wget git vim less \
     ghostscript pandoc lmodern texlive texlive-latex-extra texlive-xetex texlive-lang-chinese \
@@ -126,8 +126,8 @@ RUN --mount=type=cache,id=ragflow_apt,target=/var/cache/apt,sharing=locked \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get purge -y nodejs npm && \
     apt-get autoremove -y && \
-    apt-get update && \
-    apt-get install -y nodejs
+    apt-get -o Acquire::Retries=5 update && \
+    apt-get -o Acquire::Retries=5 install -y nodejs
 
 # stagehand-server-v3 (Node.js SEA binary used by Browser component
 # in local mode).
@@ -178,14 +178,14 @@ RUN --mount=type=bind,from=infiniflow/ragflow_deps:latest,source=/,target=/deps 
 RUN --mount=type=cache,id=ragflow_apt,target=/var/cache/apt,sharing=locked \
     curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
     curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-    apt update && \
+    apt -o Acquire::Retries=5 update && \
     arch="$(uname -m)"; \
     if [ "$arch" = "arm64" ] || [ "$arch" = "aarch64" ]; then \
         # ARM64 (macOS/Apple Silicon or Linux aarch64) \
-        ACCEPT_EULA=Y apt install -y unixodbc-dev msodbcsql18; \
+        ACCEPT_EULA=Y apt -o Acquire::Retries=5 install -y unixodbc-dev msodbcsql18; \
     else \
         # x86_64 or others \
-        ACCEPT_EULA=Y apt install -y unixodbc-dev msodbcsql17; \
+        ACCEPT_EULA=Y apt -o Acquire::Retries=5 install -y unixodbc-dev msodbcsql17; \
     fi || \
     { echo "Failed to install ODBC driver"; exit 1; }
 
@@ -218,8 +218,8 @@ WORKDIR /ragflow
 # Install build-only dependencies for compiling Python C extensions.
 # These are not inherited from base to keep the production image smaller.
 RUN --mount=type=cache,id=ragflow_apt,target=/var/cache/apt,sharing=locked \
-    apt-get update --fix-missing && \
-    apt-get install -y build-essential libpython3-dev libicu-dev libgbm-dev && \
+    apt-get -o Acquire::Retries=5 update --fix-missing && \
+    apt-get -o Acquire::Retries=5 install -y build-essential libpython3-dev libicu-dev libgbm-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # install dependencies from uv.lock file

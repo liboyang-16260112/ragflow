@@ -18,6 +18,8 @@ import json
 import secrets
 import logging
 import re
+from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import date
 
 from common.constants import RAG_FLOW_SERVICE_NAME
@@ -58,6 +60,51 @@ EMBEDDING_MDL = ""
 RERANK_MDL = ""
 ASR_MDL = ""
 VISION_MDL = ""
+
+
+@dataclass(frozen=True)
+class QKQEmbeddedChatConfig:
+    enabled: bool = False
+    source: str = ""
+    template_chat_id: str = ""
+    identity_mode: str = ""
+
+
+QKQ_EMBEDDED_CHAT = QKQEmbeddedChatConfig()
+_QKQ_TRUSTED_IDENTITY_MODES = frozenset({"trusted-header"})
+
+
+def _environment_flag(environment: Mapping[str, str], name: str) -> bool:
+    return environment.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def load_qkq_embedded_chat_config(environment: Mapping[str, str] | None = None) -> QKQEmbeddedChatConfig:
+    environment = os.environ if environment is None else environment
+    enabled = _environment_flag(environment, "QKQ_EMBEDDED_CHAT_ENABLED")
+    if not enabled:
+        return QKQEmbeddedChatConfig()
+
+    source = environment.get("QKQ_EMBEDDED_CHAT_SOURCE", "").strip()
+    template_chat_id = environment.get("QKQ_EMBEDDED_CHAT_TEMPLATE_CHAT_ID", "").strip()
+    identity_mode = environment.get("QKQ_EMBEDDED_CHAT_IDENTITY_MODE", "").strip().lower()
+
+    missing = []
+    if not source:
+        missing.append("QKQ_EMBEDDED_CHAT_SOURCE")
+    if not template_chat_id:
+        missing.append("QKQ_EMBEDDED_CHAT_TEMPLATE_CHAT_ID")
+    if missing:
+        raise ValueError(f"QKQ embedded chat is enabled but required configuration is missing: {', '.join(missing)}")
+    if identity_mode not in _QKQ_TRUSTED_IDENTITY_MODES:
+        allowed = ", ".join(sorted(_QKQ_TRUSTED_IDENTITY_MODES))
+        raise ValueError(f"QKQ_EMBEDDED_CHAT_IDENTITY_MODE must be one of: {allowed}")
+
+    return QKQEmbeddedChatConfig(
+        enabled=True,
+        source=source,
+        template_chat_id=template_chat_id,
+        identity_mode=identity_mode,
+    )
 
 
 CHAT_CFG = ""
@@ -308,6 +355,9 @@ class StorageFactory:
 
 
 def init_settings():
+    global QKQ_EMBEDDED_CHAT
+    QKQ_EMBEDDED_CHAT = load_qkq_embedded_chat_config()
+
     global DATABASE_TYPE, DATABASE
     DATABASE_TYPE = normalize_database_type(os.getenv("DB_TYPE", "mysql"))
     DATABASE = load_database_config(DATABASE_TYPE)

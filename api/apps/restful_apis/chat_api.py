@@ -23,7 +23,7 @@ import tempfile
 from copy import deepcopy
 from types import SimpleNamespace
 
-from quart import Response, request
+from quart import Response, make_response, request
 from werkzeug.exceptions import BadRequest
 
 from api.apps import current_user, login_required
@@ -40,7 +40,9 @@ from api.db.joint_services.tenant_model_service import (
 from api.db.services.chunk_feedback_service import ChunkFeedbackService
 from api.db.services.conversation_service import ConversationService, structure_answer
 from api.db.services.dialog_service import DialogService, gen_mindmap, rag_agent
+from api.db.services.file_service import FileService
 from api.db.services.knowledgebase_service import KnowledgebaseService, validate_dataset_embedding_models
+from api.db.services.qkq_managed_dialog_service import QKQManagedDialogAccessError, QKQManagedDialogResolver
 from api.db.services.llm_service import LLMBundle
 from api.db.services.search_service import SearchService
 from api.db.services.user_service import TenantService, UserTenantService
@@ -53,6 +55,7 @@ from api.utils.api_utils import (
     validate_request,
 )
 from api.utils.pagination_utils import validate_rest_api_ids, validate_rest_api_page, validate_rest_api_page_size, DEFAULT_PAGE, DEFAULT_PAGE_SIZE
+from api.utils.web_utils import apply_download_file_response_headers
 from common.constants import LLMType, RetCode, StatusEnum
 from common import settings
 from common.misc_utils import get_uuid, thread_pool_exec
@@ -119,7 +122,7 @@ _DEFAULT_DIRECT_CHAT_PROMPT_CONFIG = {
     "refine_multiturn": True,
 }
 _DEFAULT_RERANK_MODELS = {"BAAI/bge-reranker-v2-m3", "maidalun1020/bce-reranker-base_v1"}
-_READONLY_FIELDS = {"id", "tenant_id", "created_by", "create_time", "create_date", "update_time", "update_date"}
+_READONLY_FIELDS = {"id", "tenant_id", "source", "external_user_id", "created_by", "create_time", "create_date", "update_time", "update_date"}
 _PERSISTED_FIELDS = set(DialogService.model._meta.fields)
 
 
@@ -188,6 +191,18 @@ def _build_session_response(conv: dict) -> dict:
 
 
 async def _ensure_owned_chat(chat_id):
+    resolver = QKQManagedDialogResolver()
+    if resolver.is_embedded_request(request.headers):
+        try:
+            dialog = await thread_pool_exec(
+                resolver.resolve_dialog,
+                chat_id,
+                request.headers,
+                current_user.id,
+            )
+            return [dialog]
+        except QKQManagedDialogAccessError:
+            return []
     return await thread_pool_exec(DialogService.query, tenant_id=current_user.id, id=chat_id, status=StatusEnum.VALID.value)
 
 
@@ -504,6 +519,22 @@ async def create():
         return server_error_response(ex)
 
 
+@manager.route("/chats/qkq/ensure", methods=["POST"])  # noqa: F821
+@login_required
+async def ensure_qkq_managed_chat():
+    try:
+        chat = await thread_pool_exec(
+            QKQManagedDialogResolver().ensure_dialog,
+            request.headers,
+            current_user.id,
+        )
+        return get_json_result(data=_build_chat_response(chat))
+    except QKQManagedDialogAccessError:
+        return get_json_result(data=False, message="no authorization", code=RetCode.AUTHENTICATION_ERROR)
+    except Exception as ex:
+        return server_error_response(ex)
+
+
 @manager.route("/chats", methods=["GET"])  # noqa: F821
 @login_required
 async def list_chats():
@@ -530,6 +561,25 @@ async def list_chats():
         # instead of leaking internal conversion/SQL errors.
         page_number = validate_rest_api_page(request.args.get("page", DEFAULT_PAGE))
         items_per_page = validate_rest_api_page_size(request.args.get("page_size", DEFAULT_PAGE_SIZE))
+
+        managed_resolver = QKQManagedDialogResolver()
+        if managed_resolver.is_embedded_request(request.headers):
+            chats = await thread_pool_exec(
+                managed_resolver.list_dialogs,
+                request.headers,
+                current_user.id,
+            )
+            if chat_id:
+                chats = [chat for chat in chats if chat.id == chat_id]
+            if name:
+                chats = [chat for chat in chats if chat.name == name]
+            if keywords:
+                chats = [chat for chat in chats if keywords.lower() in (chat.name or "").lower()]
+            chats.sort(key=lambda chat: getattr(chat, orderby), reverse=desc)
+            total = len(chats)
+            start = (page_number - 1) * items_per_page
+            chats = chats[start : start + items_per_page]
+            return get_json_result(data={"chats": [_build_chat_response(chat) for chat in chats], "total": total})
 
         if owner_ids:
             chats, total = await thread_pool_exec(
@@ -562,6 +612,8 @@ async def list_chats():
             )
 
         return get_json_result(data={"chats": [_build_chat_response(chat) for chat in chats], "total": total})
+    except QKQManagedDialogAccessError:
+        return get_json_result(data=False, message="no authorization", code=RetCode.AUTHENTICATION_ERROR)
     except Exception as ex:
         return server_error_response(ex)
 
@@ -570,6 +622,23 @@ async def list_chats():
 @login_required
 async def get_chat(chat_id):
     try:
+        resolver = QKQManagedDialogResolver()
+        if resolver.is_embedded_request(request.headers):
+            try:
+                chat = await thread_pool_exec(
+                    resolver.resolve_dialog,
+                    chat_id,
+                    request.headers,
+                    current_user.id,
+                )
+            except QKQManagedDialogAccessError:
+                return get_json_result(
+                    data=False,
+                    message="no authorization",
+                    code=RetCode.AUTHENTICATION_ERROR,
+                )
+            return get_json_result(data=_build_chat_response(chat))
+
         tenants = await thread_pool_exec(UserTenantService.query, user_id=current_user.id)
         for tenant in tenants:
             if await thread_pool_exec(
@@ -789,10 +858,23 @@ async def bulk_delete_chats():
     if not req:
         return get_json_result(data={})
 
+    resolver = QKQManagedDialogResolver()
+    embedded_request = resolver.is_embedded_request(request.headers)
     ids = req.get("ids")
     if not ids:
         if req.get("delete_all") is True:
-            ids = [chat.id for chat in DialogService.query(tenant_id=current_user.id, status=StatusEnum.VALID.value)]
+            if embedded_request:
+                try:
+                    dialogs = await thread_pool_exec(
+                        resolver.list_dialogs,
+                        request.headers,
+                        current_user.id,
+                    )
+                except QKQManagedDialogAccessError:
+                    return get_json_result(data=False, message="no authorization", code=RetCode.AUTHENTICATION_ERROR)
+                ids = [chat.id for chat in dialogs]
+            else:
+                ids = [chat.id for chat in DialogService.query(tenant_id=current_user.id, status=StatusEnum.VALID.value)]
             if not ids:
                 return get_json_result(data={})
         else:
@@ -800,6 +882,8 @@ async def bulk_delete_chats():
             chat_id = req.get("chat_id")
             if chat_id:
                 try:
+                    if not await _ensure_owned_chat(chat_id):
+                        return get_data_error_result(message="Chat not found.")
                     if not DialogService.update_by_id(chat_id, {"status": StatusEnum.INVALID.value}):
                         return get_data_error_result(message=f"Failed to delete chat {chat_id}")
                     return get_json_result(data=True)
@@ -979,7 +1063,7 @@ async def delete_sessions(chat_id):
                         if not file_id:
                             continue
                         try:
-                            settings.STORAGE_IMPL.rm(f"{current_user.id}-downloads", file_id)
+                            settings.STORAGE_IMPL.rm(f"{file.get('created_by', current_user.id)}-downloads", file_id)
                         except Exception:
                             logging.warning("Failed to delete chat upload blob %s/%s", current_user.id, file_id)
             ConversationService.delete_by_id(sid)
@@ -992,6 +1076,56 @@ async def delete_sessions(chat_id):
                     message=f"Partially deleted {success_count} sessions with {len(all_errors)} errors",
                 )
             return get_data_error_result(message="; ".join(all_errors))
+        return get_json_result(data=True)
+    except Exception as ex:
+        return server_error_response(ex)
+
+
+@manager.route("/chats/<chat_id>/files", methods=["POST"])  # noqa: F821
+@login_required
+async def upload_chat_files(chat_id):
+    if not await _ensure_owned_chat(chat_id):
+        return get_json_result(data=False, message="no authorization", code=RetCode.AUTHENTICATION_ERROR)
+    try:
+        files = await request.files
+        if "file" not in files:
+            return get_data_error_result(message="No file part!")
+        file_objects = files.getlist("file")
+        if not file_objects or any(not file.filename for file in file_objects):
+            return get_data_error_result(message="No file selected!")
+        uploaded = [await thread_pool_exec(FileService.upload_info, chat_id, file, None) for file in file_objects]
+        return get_json_result(data=uploaded)
+    except Exception as ex:
+        return server_error_response(ex)
+
+
+@manager.route("/chats/<chat_id>/files/<file_id>", methods=["GET"])  # noqa: F821
+@login_required
+async def download_chat_file(chat_id, file_id):
+    if not await _ensure_owned_chat(chat_id):
+        return get_json_result(data=False, message="no authorization", code=RetCode.AUTHENTICATION_ERROR)
+    try:
+        blob = await thread_pool_exec(FileService.get_blob, chat_id, file_id)
+        if not blob:
+            return get_data_error_result(message="Attachment not found.")
+        response = await make_response(blob)
+        return apply_download_file_response_headers(
+            response,
+            request.args.get("mime_type") or "application/octet-stream",
+            request.args.get("ext"),
+            request.args.get("filename"),
+        )
+    except Exception as ex:
+        return server_error_response(ex)
+
+
+@manager.route("/chats/<chat_id>/files/<file_id>", methods=["DELETE"])  # noqa: F821
+@login_required
+async def delete_chat_file(chat_id, file_id):
+    if not await _ensure_owned_chat(chat_id):
+        return get_json_result(data=False, message="no authorization", code=RetCode.AUTHENTICATION_ERROR)
+    try:
+        await thread_pool_exec(settings.STORAGE_IMPL.rm, f"{chat_id}-downloads", file_id)
         return get_json_result(data=True)
     except Exception as ex:
         return server_error_response(ex)
@@ -1271,6 +1405,12 @@ async def session_completion(chat_id_in_arg=""):
                     message="no authorization",
                     code=RetCode.AUTHENTICATION_ERROR,
                 )
+            resolver = QKQManagedDialogResolver()
+            if resolver.is_embedded_request(request.headers):
+                try:
+                    resolver.validate_file_descriptors(chat_id, request_messages)
+                except QKQManagedDialogAccessError:
+                    return get_data_error_result(message="Attachment not found.")
             e, dia = await thread_pool_exec(DialogService.get_by_id, chat_id)
             if not e:
                 return get_data_error_result(message="Chat not found!")
