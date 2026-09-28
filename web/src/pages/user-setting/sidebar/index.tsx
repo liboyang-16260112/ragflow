@@ -19,7 +19,6 @@ import { RAGFlowAvatar } from '@/components/ragflow-avatar';
 import ThemeSwitch from '@/components/theme-switch';
 import { Button } from '@/components/ui/button';
 import { Domain } from '@/constants/common';
-import { useLogout } from '@/hooks/use-login-request';
 import {
   useFetchSystemVersion,
   useFetchUserInfo,
@@ -29,7 +28,6 @@ import { Routes } from '@/routes';
 import { TFunction } from 'i18next';
 import {
   LucideBox,
-  LucideLogOut,
   LucideMessagesSquare,
   LucideServer,
   LucideUnplug,
@@ -89,8 +87,6 @@ export function SideBar() {
       fetchSystemVersion();
     }
   }, [fetchSystemVersion]);
-  const { logout } = useLogout();
-
   return (
     <aside className="shrink-0 w-16 md:w-[303px] bg-bg-base flex flex-col overflow-hidden">
       <header>
@@ -136,24 +132,11 @@ export function SideBar() {
         </ul>
       </nav>
 
-      <footer className="p-2 md:p-6 mt-auto">
-        <div className="hidden md:flex items-center gap-2 mb-6 justify-between">
+      <footer className="hidden md:block p-6 mt-auto">
+        <div className="flex items-center gap-2 justify-between">
           <span className="text-xs text-accent-primary">{version}</span>
-
           <ThemeSwitch />
         </div>
-
-        <Button
-          block
-          size="lg"
-          variant="transparent"
-          aria-label={t('setting.logout')}
-          className="max-md:size-10 max-md:p-0 max-md:mx-auto max-md:justify-center"
-          onClick={() => logout()}
-        >
-          <LucideLogOut className="size-[1em] md:hidden" />
-          <span className="hidden md:inline">{t('setting.logout')}</span>
-        </Button>
       </footer>
     </aside>
   );
