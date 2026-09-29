@@ -6,6 +6,16 @@ import { cleanup, render, screen } from '@testing-library/react';
 import React from 'react';
 import LoginBranding from './branding';
 
+jest.mock('@/config/runtime', () => ({
+  RuntimeConfig: {
+    basePath: '/ragflow/',
+    apiBasePath: '/ragflow-api/',
+    embeddedAuth: false,
+  },
+  publicAssetUrl: (assetPath: string) =>
+    `/ragflow/${assetPath.replace(/^\/+/, '')}`,
+}));
+
 void React;
 
 describe('LoginBranding', () => {
@@ -39,11 +49,8 @@ describe('LoginBranding', () => {
     const logo = screen.getByRole('img', {
       name: 'FMoss-RAG brand logo',
     });
-    expect(logo).toHaveAttribute('src', '/fmoss-logo.png');
-    expect(logo).toHaveAttribute(
-      'class',
-      'size-8 mr-[12] cursor-pointer',
-    );
+    expect(logo).toHaveAttribute('src', '/ragflow/fmoss-logo.png');
+    expect(logo).toHaveAttribute('class', 'size-8 mr-[12] cursor-pointer');
     expect(screen.getByText('FMoss-RAG')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', {

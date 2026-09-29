@@ -5,6 +5,9 @@ import i18n, {
   changeLanguageAsync,
   DEFAULT_LANGUAGE_CODE,
   initLanguage,
+  normalizeLanguageCode,
+  resolveInitialLanguage,
+  resolveRequestedLanguage,
 } from './config';
 import translation_zh from './zh';
 
@@ -44,7 +47,39 @@ describe('language initialization', () => {
     expect(storage.getLanguage()).toBe(LanguageAbbreviation.Zh);
   });
 
-  it('prefers a saved English language selection', async () => {
+  it('forces the configured Simplified Chinese default in embedded delivery mode', () => {
+    expect(
+      resolveInitialLanguage({
+        embeddedAuth: true,
+        savedLanguage: LanguageAbbreviation.En,
+        defaultLanguage: LanguageAbbreviation.Zh,
+      }),
+    ).toBe(LanguageAbbreviation.Zh);
+  });
+
+  it('normalizes the production zh alias to the RAGFlow Simplified Chinese locale', () => {
+    expect(normalizeLanguageCode('zh')).toBe(LanguageAbbreviation.Zh);
+    expect(
+      resolveInitialLanguage({
+        embeddedAuth: true,
+        savedLanguage: LanguageAbbreviation.En,
+        defaultLanguage: 'zh',
+      }),
+    ).toBe(LanguageAbbreviation.Zh);
+  });
+
+
+  it('rejects attempts to switch an embedded delivery page back to English', () => {
+    expect(
+      resolveRequestedLanguage({
+        embeddedAuth: true,
+        requestedLanguage: LanguageAbbreviation.En,
+        defaultLanguage: LanguageAbbreviation.Zh,
+      }),
+    ).toBe(LanguageAbbreviation.Zh);
+  });
+
+  it('prefers a saved English language selection outside embedded delivery mode', async () => {
     storage.setLanguage(LanguageAbbreviation.En);
 
     await initLanguage();
