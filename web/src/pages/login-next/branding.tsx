@@ -1,3 +1,4 @@
+import { publicAssetUrl } from '@/config/runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +12,7 @@ export default function LoginBranding() {
       <div className="mb-4 flex w-full items-center px-4 pt-10 sm:px-10">
         <div className="mr-3 flex size-12 items-center justify-center rounded-lg p-2">
           <img
-            src="/fmoss-logo.png"
+            src={publicAssetUrl('/fmoss-logo.png')}
             alt="FMoss-RAG brand logo"
             className="size-8 mr-[12] cursor-pointer"
           />

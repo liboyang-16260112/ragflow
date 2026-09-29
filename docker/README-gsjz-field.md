@@ -42,7 +42,7 @@ docker compose \
 - 仅 `ragflow-cpu` 属于启用的 `cpu` profile；
 - 容器名为 `fmoss-rag-server-cpu`；
 - 网络为外部 `dev`；
-- Web/API 端口为 `280/2443`、`9380-9384`；
+- Web/API 端口为 `280/281/2443`、`9380-9384`，其中 `281` 是原生登录入口；
 - MySQL、Elasticsearch、MinIO、Redis 均指向既有 `base-*` 服务。
 
 ## 3. 更新应用容器
@@ -68,10 +68,27 @@ docker compose \
 ```bash
 docker inspect -f 'status={{.State.Status}} restart={{.RestartCount}} image={{.Config.Image}}' fmoss-rag-server-cpu
 docker port fmoss-rag-server-cpu
-curl -fsS http://127.0.0.1:9380/v1/health
+curl -fsS http://127.0.0.1:9380/api/v1/system/healthz
 ```
 
 还需通过 66 的统一入口验证 `/ragflow/`、`/ragflow-api/`、知识库管理和知识问答流式响应。
+
+原生登录入口使用同一份 `web/dist`，不是第二套前端，也不会启动第二个 Nginx：
+
+```bash
+curl -I http://127.0.0.1:281/
+curl -fsS http://127.0.0.1:281/ragflow/runtime-config.js
+```
+
+浏览器访问 `http://<RAGFlow主机>:281/ragflow/login`。80 监听继续由 FMOSS 统一入口使用嵌入认证，81 监听通过运行时配置关闭嵌入认证。前端代码变化时只需重新执行一次 `npm run build` 并更新挂载的 `web/dist`，不需要为两种认证模式分别构建，也不需要重建 RAGFlow 镜像。
+
+后端运行源码也按目录挂载到原路径：`admin`、`agent`、`api`、`common`、`deepdoc`、`mcp`、`memory`、`rag`、`tools`。修改这些目录中的 Python 代码后，重启应用容器即可：
+
+```bash
+docker restart fmoss-rag-server-cpu
+```
+
+不要把整个仓库挂载到 `/ragflow`，否则会覆盖镜像中的 `.venv`、运行依赖和其他启动所需文件。`conf/service_conf.yaml.template` 和 `docker/entrypoint.sh` 继续使用已有的单文件挂载。
 
 ## 5. 回滚
 

@@ -37,6 +37,24 @@ services:
       QKQ_EMBEDDED_CHAT_SOURCE: ${QKQ_EMBEDDED_CHAT_SOURCE:-}
       QKQ_EMBEDDED_CHAT_TEMPLATE_CHAT_ID: ${QKQ_EMBEDDED_CHAT_TEMPLATE_CHAT_ID:-}
       QKQ_EMBEDDED_CHAT_IDENTITY_MODE: ${QKQ_EMBEDDED_CHAT_IDENTITY_MODE:-}
+      DEFAULT_SUPERUSER_EMAIL: ${DEFAULT_SUPERUSER_EMAIL:?set the existing active RAGFlow superuser email}
+    ports:
+      - ${SVR_STANDALONE_WEB_HTTP_PORT:-281}:81
+    volumes:
+      # Runtime source mounts: edit code on the host and restart only the app
+      # container. Do not mount the repository root over /ragflow because that
+      # would hide the image's virtualenv and runtime dependencies.
+      - ../admin:/ragflow/admin:ro
+      - ../agent:/ragflow/agent:ro
+      - ../api:/ragflow/api:ro
+      - ../common:/ragflow/common:ro
+      - ../deepdoc:/ragflow/deepdoc:ro
+      - ../mcp:/ragflow/mcp:ro
+      - ../memory:/ragflow/memory:ro
+      - ../rag:/ragflow/rag:ro
+      - ../tools:/ragflow/tools:ro
+      - ../web/dist:/ragflow/web/dist:ro
+      - ./nginx/ragflow.conf.python:/etc/nginx/conf.d/ragflow.conf.python:ro
 
 networks:
   ragflow:

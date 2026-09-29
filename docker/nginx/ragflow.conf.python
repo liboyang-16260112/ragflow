@@ -8,7 +8,7 @@ server {
     gzip_comp_level 9;
     gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
     gzip_vary on;
-    gzip_disable "MSIE [1-6]\.";
+    gzip_disable "MSIE [1-6]\\.";
 
     location ~ ^/api/v1/admin {
         proxy_pass http://127.0.0.1:9381;
@@ -20,6 +20,13 @@ server {
         include proxy.conf;
     }
 
+    # FMOSS ingress strips /ragflow/ before proxying to this listener. Keep the
+    # embedded authentication mode as the safe default and never cache it.
+    location = /runtime-config.js {
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+        try_files $uri =404;
+    }
 
     location / {
         index index.html;
@@ -30,5 +37,64 @@ server {
     location ~ ^/static/(css|js|media)/ {
         expires 10y;
         access_log off;
+    }
+}
+
+# Native RAGFlow Web entry. This is the same Nginx process and the same dist as
+# the FMOSS embedded entry above; only the runtime authentication mode differs.
+server {
+    listen 81;
+    server_name _;
+    absolute_redirect off;
+    root /ragflow/web/dist;
+
+    gzip on;
+    gzip_min_length 1k;
+    gzip_comp_level 9;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+    gzip_vary on;
+    gzip_disable "MSIE [1-6]\\.";
+
+    location = / {
+        return 302 /ragflow/login;
+    }
+
+    location = /ragflow {
+        return 302 /ragflow/login;
+    }
+
+    location = /ragflow/runtime-config.js {
+        default_type application/javascript;
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+        return 200 'window.__RAGFLOW_RUNTIME_CONFIG__ = { embeddedAuth: false };';
+    }
+
+    location ~ ^/ragflow-api/api/v1/admin {
+        rewrite ^/ragflow-api/(.*)$ /$1 break;
+        proxy_pass http://127.0.0.1:9381;
+        include proxy.conf;
+    }
+
+    location ^~ /ragflow-api/ {
+        rewrite ^/ragflow-api/(.*)$ /$1 break;
+        proxy_pass http://127.0.0.1:9380;
+        include proxy.conf;
+    }
+
+    location ^~ /ragflow/ {
+        rewrite ^/ragflow/(.*)$ /$1 break;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # SPA fallback from the /ragflow/ location internally redirects here.
+    # Serve the shared index instead of sending it back through the login redirect.
+    location = /index.html {
+        try_files /index.html =404;
+    }
+
+    location / {
+        return 302 /ragflow/login;
     }
 }
